@@ -1,0 +1,2636 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sistema POS Profesional - Venta e Inventario</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome para Iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js para Gráficos Profesionales -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- SheetJS para Exportar e Importar Excel (.xlsx) -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body class="bg-slate-100 font-sans antialiased selection:bg-emerald-500 selection:text-white pb-16 md:pb-0">
+
+    <!-- PANTALLA DE BLOQUEO DE LICENCIA -->
+    <div id="license-screen" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 md:p-8 shadow-2xl space-y-6 text-center">
+            <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-2xl">
+                <i class="fa-solid fa-key"></i>
+            </div>
+            <div>
+                <h2 class="text-2xl font-bold text-slate-800">Activa tu Licencia</h2>
+                <p class="text-sm text-slate-500 mt-1">Ingresa el número de licencia mensual para acceder al sistema.</p>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <input type="text" id="license-input" placeholder="Ej: LIC-2026-10-31-KEY99" class="w-full px-4 py-3 border border-slate-300 rounded-xl font-mono text-center text-slate-800 tracking-wider focus:outline-none focus:ring-2 focus:ring-emerald-500 uppercase">
+                    <p id="license-error" class="text-xs text-rose-500 mt-2 hidden font-semibold"></p>
+                </div>
+                <button onclick="activateLicense()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-emerald-600/20">
+                    Validar Licencia
+                </button>
+            </div>
+            
+            <p class="text-xs text-slate-400 border-t pt-4">Soporte Técnico & Renovaciones: WhatsApp del Administrador</p>
+        </div>
+    </div>
+
+    <!-- CONTENEDOR PRINCIPAL DEL SISTEMA POS -->
+    <div id="app-container" class="flex h-screen overflow-hidden hidden">
+        <!-- Sidebar de Navegación (Escritorio) -->
+        <aside class="w-64 bg-slate-900 text-slate-300 flex-col hidden md:flex">
+            <div class="p-5 text-xl font-bold text-white flex items-center gap-3 border-b border-slate-800">
+                <i class="fa-solid fa-cash-register text-emerald-400"></i>
+                <span>POS Master</span>
+            </div>
+            <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
+                <button onclick="switchTab('pos')" id="btn-pos" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-600 text-white font-medium transition">
+                    <i class="fa-solid fa-cart-shopping w-5"></i> Venta (POS)
+                </button>
+                <button onclick="switchTab('inventory')" id="btn-inventory" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
+                    <i class="fa-solid fa-boxes-stacked w-5"></i> Inventario
+                </button>
+                <button onclick="switchTab('cash')" id="btn-cash" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
+                    <i class="fa-solid fa-vault w-5"></i> Caja / Cierre
+                </button>
+                <button onclick="switchTab('invoicing')" id="btn-invoicing" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
+                    <i class="fa-solid fa-receipt w-5"></i> Facturación
+                </button>
+                <button onclick="switchTab('accounts')" id="btn-accounts" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
+                    <i class="fa-solid fa-wallet w-5"></i> Bancos & Efectivo
+                </button>
+                <button onclick="switchTab('payables')" id="btn-payables" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
+                    <i class="fa-solid fa-file-invoice-dollar w-5"></i> Cuentas por Pagar
+                </button>
+                <button onclick="switchTab('clients')" id="btn-clients" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
+                    <i class="fa-solid fa-users w-5"></i> Clientes & Crédito
+                </button>
+                <button onclick="switchTab('statistics')" id="btn-statistics" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
+                    <i class="fa-solid fa-chart-pie w-5"></i> Estadísticas
+                </button>
+                <button onclick="switchTab('reports')" id="btn-reports" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
+                    <i class="fa-solid fa-chart-line w-5"></i> Reportes
+                </button>
+            </nav>
+            <div class="p-4 border-t border-slate-800 text-xs text-slate-400 text-center space-y-1">
+                <div>Sistema POS v2.2 - Profesional</div>
+                <div id="license-expiry-display" class="font-semibold text-emerald-400"></div>
+                <button onclick="logoutLicense()" class="text-rose-400 hover:underline text-[10px] block mx-auto mt-1">Cambiar Licencia</button>
+            </div>
+        </aside>
+
+        <!-- BARRA DE NAVEGACIÓN INFERIOR MÓVIL -->
+        <div class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 text-slate-400 flex justify-around items-center z-40 py-2 px-1">
+            <button onclick="switchTab('pos')" id="mob-btn-pos" class="flex flex-col items-center justify-center w-full text-emerald-400">
+                <i class="fa-solid fa-cart-shopping text-lg"></i>
+                <span class="text-[10px] font-medium mt-0.5">Venta</span>
+            </button>
+            <button onclick="switchTab('inventory')" id="mob-btn-inventory" class="flex flex-col items-center justify-center w-full">
+                <i class="fa-solid fa-boxes-stacked text-lg"></i>
+                <span class="text-[10px] font-medium mt-0.5">Inventario</span>
+            </button>
+            <button onclick="switchTab('cash')" id="mob-btn-cash" class="flex flex-col items-center justify-center w-full">
+                <i class="fa-solid fa-vault text-lg"></i>
+                <span class="text-[10px] font-medium mt-0.5">Caja</span>
+            </button>
+            <button onclick="switchTab('clients')" id="mob-btn-clients" class="flex flex-col items-center justify-center w-full">
+                <i class="fa-solid fa-users text-lg"></i>
+                <span class="text-[10px] font-medium mt-0.5">Clientes</span>
+            </button>
+            <button onclick="toggleMobileMoreMenu()" id="mob-btn-more" class="flex flex-col items-center justify-center w-full relative">
+                <i class="fa-solid fa-ellipsis-vertical text-lg"></i>
+                <span class="text-[10px] font-medium mt-0.5">Más</span>
+            </button>
+        </div>
+
+        <!-- MENÚ EMERGENTE "MÁS" EN MÓVIL -->
+        <div id="mobile-more-menu" class="md:hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex flex-col justify-end" onclick="toggleMobileMoreMenu()">
+            <div class="bg-white rounded-t-3xl p-5 space-y-3 animate-slide-up" onclick="event.stopPropagation()">
+                <div class="w-12 h-1 bg-slate-200 rounded-full mx-auto mb-2"></div>
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 px-2">Más Módulos del Sistema</h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="switchTab('invoicing'); toggleMobileMoreMenu();" id="mob-btn-invoicing" class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100 text-slate-700 font-medium text-xs active:bg-emerald-50">
+                        <i class="fa-solid fa-receipt text-emerald-600 text-base"></i> Facturación
+                    </button>
+                    <button onclick="switchTab('accounts'); toggleMobileMoreMenu();" id="mob-btn-accounts" class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100 text-slate-700 font-medium text-xs active:bg-emerald-50">
+                        <i class="fa-solid fa-wallet text-emerald-600 text-base"></i> Bancos & Efec.
+                    </button>
+                    <button onclick="switchTab('payables'); toggleMobileMoreMenu();" id="mob-btn-payables" class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100 text-slate-700 font-medium text-xs active:bg-emerald-50">
+                        <i class="fa-solid fa-file-invoice-dollar text-emerald-600 text-base"></i> Cuentas x Pagar
+                    </button>
+                    <button onclick="switchTab('statistics'); toggleMobileMoreMenu();" id="mob-btn-statistics" class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100 text-slate-700 font-medium text-xs active:bg-emerald-50">
+                        <i class="fa-solid fa-chart-pie text-emerald-600 text-base"></i> Estadísticas
+                    </button>
+                    <button onclick="switchTab('reports'); toggleMobileMoreMenu();" id="mob-btn-reports" class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100 text-slate-700 font-medium text-xs active:bg-emerald-50">
+                        <i class="fa-solid fa-chart-line text-emerald-600 text-base"></i> Reportes
+                    </button>
+                </div>
+                
+                <!-- ESTADO DE LICENCIA EN MÓVIL -->
+                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-center space-y-0.5 mt-2">
+                    <div id="license-expiry-display-mobile" class="text-xs font-semibold text-emerald-600"></div>
+                </div>
+
+                <div class="pt-2 border-t mt-3 flex justify-between items-center text-[11px] text-slate-400 px-1">
+                    <span>Sistema POS v2.2</span>
+                    <button onclick="logoutLicense()" class="text-rose-500 font-semibold">Cambiar Licencia</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contenido Principal -->
+        <main class="flex-1 flex flex-col h-screen overflow-y-auto pb-16 md:pb-0">
+            <!-- Barra Superior -->
+            <header class="bg-white shadow-sm px-4 md:px-6 py-3 md:py-4 flex flex-col md:flex-row justify-between items-center gap-3 z-10 border-b md:border-b-0">
+                <div class="flex justify-between items-center w-full md:w-auto">
+                    <h1 id="page-title" class="text-lg md:text-xl font-bold text-slate-800">Terminal de Venta (POS)</h1>
+                    <span id="cash-status-badge" class="px-2.5 py-0.5 bg-amber-100 text-amber-800 rounded-full text-[11px] md:text-xs font-semibold md:hidden">Caja Cerrada</span>
+                </div>
+                
+                <div class="flex items-center gap-2 md:gap-3 flex-wrap w-full md:w-auto justify-between md:justify-end">
+                    <div class="flex items-center gap-1.5 w-full sm:w-auto">
+                        <button onclick="exportToExcel()" class="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition shadow-sm">
+                            <i class="fa-solid fa-file-excel text-xs"></i> Exportar
+                        </button>
+                        <label class="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 text-white px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer transition shadow-sm">
+                            <i class="fa-solid fa-file-import text-xs"></i> Importar
+                            <input type="file" id="excel-file-input" accept=".xlsx, .xls" class="hidden" onchange="importFromExcel(event)">
+                        </label>
+                    </div>
+
+                    <div class="hidden md:flex items-center gap-3">
+                        <span id="cash-status-badge-desktop" class="px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-semibold">Caja Cerrada</span>
+                        <span class="text-sm text-slate-600"><i class="fa-regular fa-calendar-days mr-2"></i><span id="current-date"></span></span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Contenedor de Vistas -->
+            <div class="p-3 md:p-6 flex-1">
+
+                <!-- VISTA 1: POS (VENTAS) -->
+                <section id="view-pos" class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 h-full">
+                    <div class="lg:col-span-2 flex flex-col h-full bg-white rounded-2xl shadow-sm p-3 md:p-4 border border-slate-100">
+                        <div class="mb-3">
+                            <input type="text" id="pos-search" oninput="filterPOSProducts()" placeholder="Buscar producto por nombre o categoría..." class="w-full px-3 md:px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        </div>
+                        <div id="pos-product-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 md:gap-4 overflow-y-auto flex-1 p-0.5 max-h-[380px] lg:max-h-none"></div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-sm p-3 md:p-4 flex flex-col h-full border border-slate-100">
+                        <h2 class="text-md md:text-lg font-bold text-slate-800 mb-2 border-b pb-2 flex justify-between items-center">
+                            <span>Carrito Actual</span>
+                            <button onclick="clearCart()" class="text-rose-500 text-xs font-normal hover:underline">Vaciar</button>
+                        </h2>
+                        
+                        <div class="mb-3 space-y-1">
+                            <label class="block text-[10px] md:text-xs font-semibold text-slate-500 uppercase">Cliente / Nombre Venta</label>
+                            <input type="text" id="cart-client-name" list="clients-datalist" placeholder="Ej: Cliente Ocasional / Juan Pérez" class="w-full px-3 py-1.5 md:py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs md:text-sm font-medium bg-slate-50">
+                            <datalist id="clients-datalist"></datalist>
+                        </div>
+
+                        <div id="cart-items" class="flex-1 overflow-y-auto space-y-2 max-h-[220px] lg:max-h-none pr-1"></div>
+                        
+                        <div class="border-t pt-2 mt-2 space-y-2">
+                            <div class="flex justify-between text-xs md:text-sm text-slate-600">
+                                <span>Subtotal</span>
+                                <span id="cart-subtotal">$0.000</span>
+                            </div>
+                            <div class="flex justify-between text-base md:text-lg font-bold text-slate-900">
+                                <span>Total a Pagar</span>
+                                <span id="cart-total" class="text-emerald-600">$0.000</span>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] md:text-xs font-semibold text-slate-500 uppercase mb-1">Cuenta / Método de Pago</label>
+                                <select id="checkout-account" class="w-full px-3 py-1.5 md:py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs md:text-sm font-medium bg-slate-50"></select>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 pt-1">
+                                <button onclick="checkout('Efectivo')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 md:py-2.5 rounded-xl transition shadow-lg shadow-emerald-600/20 text-xs md:text-sm">
+                                    <i class="fa-solid fa-money-bill-wave mr-1"></i> Cobrar Efec.
+                                </button>
+                                <button onclick="checkout('Transferencia')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 md:py-2.5 rounded-xl transition shadow-lg shadow-blue-600/20 text-xs md:text-sm">
+                                    <i class="fa-solid fa-right-left mr-1"></i> Transf.
+                                </button>
+                            </div>
+                            <button onclick="checkout('Crédito')" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-semibold py-2 rounded-xl transition flex items-center justify-center gap-2 text-xs md:text-sm shadow-md">
+                                <i class="fa-solid fa-hand-holding-dollar"></i> Venta a Crédito / Fiado
+                            </button>
+                            <button onclick="sendInvoiceWhatsApp()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2 rounded-xl transition flex items-center justify-center gap-2 text-xs md:text-sm shadow-md">
+                                <i class="fa-brands fa-whatsapp text-base"></i> Factura por WhatsApp
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VISTA 2: INVENTARIO -->
+                <section id="view-inventory" class="hidden space-y-4 md:space-y-6">
+                    <div class="bg-white rounded-2xl shadow-sm p-4 md:p-6 flex flex-col md:flex-row justify-between items-center gap-3">
+                        <input type="text" id="inv-search" oninput="renderInventory()" placeholder="Buscar en inventario..." class="w-full md:w-80 px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <button onclick="openProductModal()" class="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-5 py-2.5 rounded-xl transition shadow-lg shadow-emerald-600/20 text-xs md:text-sm">
+                            <i class="fa-solid fa-plus mr-2"></i> Nuevo Producto
+                        </button>
+                    </div>
+                    <div class="bg-white rounded-2xl shadow-sm overflow-x-auto">
+                        <table class="w-full text-left border-collapse min-w-[500px]">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 text-xs font-bold uppercase">
+                                    <th class="p-3 md:p-4">Artículo</th>
+                                    <th class="p-3 md:p-4">Precio de Venta</th>
+                                    <th class="p-3 md:p-4 text-right">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventory-table-body" class="divide-y divide-slate-100 text-xs md:text-sm text-slate-700"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- VISTA 3: CAJA Y CIERRE -->
+                <section id="view-cash" class="hidden max-w-4xl mx-auto space-y-4 md:space-y-6">
+                    <div class="bg-white rounded-2xl shadow-sm p-4 md:p-6 space-y-4 md:space-y-6">
+                        <div class="flex justify-between items-center border-b pb-3">
+                            <div>
+                                <h2 class="text-base md:text-lg font-bold text-slate-800">Control & Cierre de Caja Diaria</h2>
+                                <p class="text-xs text-slate-500">Gestiona aperturas, cuadre y cierres de turno.</p>
+                            </div>
+                            <span id="cash-status-tag" class="px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-bold">Caja Cerrada</span>
+                        </div>
+                        
+                        <div id="cash-control-content"></div>
+                    </div>
+
+                    <!-- HISTORIAL DE CIERRES -->
+                    <div class="bg-white rounded-2xl shadow-sm p-4 md:p-6 space-y-4">
+                        <h3 class="text-sm md:text-md font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-clock-rotate-left text-emerald-600"></i> Historial de Cierres de Caja
+                        </h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse min-w-[650px]">
+                                <thead>
+                                    <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 text-[11px] font-bold uppercase">
+                                        <th class="p-2.5">Apertura</th>
+                                        <th class="p-2.5">Cierre</th>
+                                        <th class="p-2.5">Fondo Inicial</th>
+                                        <th class="p-2.5">Vtas. Efectivo</th>
+                                        <th class="p-2.5">Vtas. Transf.</th>
+                                        <th class="p-2.5 text-amber-600">Vtas. Crédito</th>
+                                        <th class="p-2.5 text-right">Total en Caja</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cash-history-body" class="divide-y divide-slate-100 text-xs text-slate-700"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VISTA FACTURACIÓN -->
+                <section id="view-invoicing" class="hidden space-y-4 md:space-y-6">
+                    <div class="bg-white rounded-2xl shadow-sm p-4 md:p-6">
+                        <div class="flex border-b border-slate-200 gap-4 mb-4">
+                            <button id="tab-btn-fact-purchase" onclick="switchFactTab('purchase')" class="pb-2 font-bold text-sm text-emerald-600 border-b-2 border-emerald-600">
+                                <i class="fa-solid fa-cart-flatbed mr-1.5"></i> Compra
+                            </button>
+                            <button id="tab-btn-fact-credit-sale" onclick="switchFactTab('credit-sale')" class="pb-2 font-bold text-sm text-slate-400 hover:text-slate-600 border-b-2 border-transparent">
+                                <i class="fa-solid fa-hand-holding-dollar mr-1.5"></i> Venta a Crédito
+                            </button>
+                        </div>
+
+                        <!-- SUB-SECCIÓN COMPRA -->
+                        <div id="fact-sub-purchase" class="space-y-4">
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-sm md:text-base font-bold text-slate-800">Facturas de Compra a Proveedores</h3>
+                                <button onclick="openNewFactPurchaseModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-3 py-2 rounded-xl text-xs transition">
+                                    <i class="fa-solid fa-plus mr-1"></i> Nueva Compra
+                                </button>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse min-w-[700px]">
+                                    <thead>
+                                        <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 text-xs font-bold uppercase">
+                                            <th class="p-3">Factura #</th>
+                                            <th class="p-3">Proveedor</th>
+                                            <th class="p-3">Fecha Factura</th>
+                                            <th class="p-3">Días Transcurridos</th>
+                                            <th class="p-3">Monto Total</th>
+                                            <th class="p-3 text-right">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="fact-purchase-table-body" class="divide-y divide-slate-100 text-xs md:text-sm text-slate-700"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- SUB-SECCIÓN VENTA A CRÉDITO -->
+                        <div id="fact-sub-credit-sale" class="hidden space-y-4">
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-sm md:text-base font-bold text-slate-800">Facturas de Ventas a Crédito</h3>
+                                <button onclick="openNewFactCreditSaleModal()" class="bg-amber-600 hover:bg-amber-700 text-white font-semibold px-3 py-2 rounded-xl text-xs transition">
+                                    <i class="fa-solid fa-plus mr-1"></i> Nueva Venta a Crédito
+                                </button>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse min-w-[700px]">
+                                    <thead>
+                                        <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 text-xs font-bold uppercase">
+                                            <th class="p-3">Factura #</th>
+                                            <th class="p-3">Cliente</th>
+                                            <th class="p-3">Fecha</th>
+                                            <th class="p-3">Monto Total</th>
+                                            <th class="p-3 text-right">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="fact-credit-sale-table-body" class="divide-y divide-slate-100 text-xs md:text-sm text-slate-700"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VISTA 4: BANCOS Y EFECTIVO -->
+                <section id="view-accounts" class="hidden space-y-4 md:space-y-6">
+                    <div class="bg-white rounded-2xl shadow-sm p-4 md:p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+                        <div>
+                            <h2 class="text-base md:text-lg font-bold text-slate-800">Cuentas Bancarias y Efectivo</h2>
+                            <p class="text-xs text-slate-500">Gestiona tus saldos y cuentas operativas vinculadas.</p>
+                        </div>
+                        <button onclick="openAccountModal()" class="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-xl text-xs md:text-sm transition">
+                            <i class="fa-solid fa-plus mr-1.5"></i> Nueva Cuenta
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6" id="accounts-cards-grid"></div>
+                </section>
+
+                <!-- VISTA 5: CUENTAS POR PAGAR & PROVEEDORES -->
+                <section id="view-payables" class="hidden space-y-4 md:space-y-6">
+                    <div class="bg-white rounded-2xl shadow-sm p-4 md:p-6 flex flex-col md:flex-row justify-between items-center gap-3">
+                        <div>
+                            <h2 class="text-base md:text-lg font-bold text-slate-800">Proveedores & Facturas por Pagar</h2>
+                            <p class="text-xs text-slate-500">Consulta el estado de la deuda y registra abonamientos.</p>
+                        </div>
+                        <div class="flex gap-2 w-full md:w-auto">
+                            <button onclick="openProviderModal()" class="flex-1 md:flex-none bg-slate-800 hover:bg-slate-900 text-white font-semibold px-3 py-2 rounded-xl text-xs transition">
+                                <i class="fa-solid fa-truck-field mr-1"></i> Proveedores
+                            </button>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-2xl shadow-sm overflow-x-auto">
+                        <table class="w-full text-left border-collapse min-w-[600px]">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 text-xs font-bold uppercase">
+                                    <th class="p-3">Factura #</th>
+                                    <th class="p-3">Proveedor</th>
+                                    <th class="p-3">Fecha</th>
+                                    <th class="p-3">Total</th>
+                                    <th class="p-3">Saldo Pendiente</th>
+                                    <th class="p-3 text-right">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="payables-table-body" class="divide-y divide-slate-100 text-xs md:text-sm text-slate-700"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- VISTA 6: CLIENTES & CRÉDITO -->
+                <section id="view-clients" class="hidden space-y-4 md:space-y-6">
+                    <div class="bg-white rounded-2xl shadow-sm p-4 md:p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+                        <div>
+                            <h2 class="text-base md:text-lg font-bold text-slate-800">Cartera de Clientes & Créditos</h2>
+                            <p class="text-xs text-slate-500">Administra deudas acumuladas, saldos, historial de abonos y recibe pagos.</p>
+                        </div>
+                        <button onclick="openClientModal()" class="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-xl text-xs md:text-sm transition">
+                            <i class="fa-solid fa-user-plus mr-1.5"></i> Registrar Cliente
+                        </button>
+                    </div>
+                    <div class="bg-white rounded-2xl shadow-sm overflow-x-auto">
+                        <table class="w-full text-left border-collapse min-w-[500px]">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 text-xs font-bold uppercase">
+                                    <th class="p-3 md:p-4">Cliente</th>
+                                    <th class="p-3 md:p-4">Teléfono</th>
+                                    <th class="p-3 md:p-4">Deuda Acumulada</th>
+                                    <th class="p-3 md:p-4 text-right">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="clients-table-body" class="divide-y divide-slate-100 text-xs md:text-sm text-slate-700"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- VISTA 7: ESTADÍSTICAS PROFESIONALES -->
+                <section id="view-statistics" class="hidden space-y-4 md:space-y-6">
+                    <div class="grid grid-cols-2 md:grid-cols-6 gap-3 md:gap-4">
+                        <div class="bg-white p-3 md:p-5 rounded-2xl shadow-sm border-l-4 border-emerald-500">
+                            <p class="text-[10px] md:text-xs text-slate-500 font-semibold uppercase">Ingresos Totales en Efectivo</p>
+                            <h3 id="stat-total-cash-income" class="text-base md:text-xl font-bold text-slate-800 mt-1">$0.000</h3>
+                        </div>
+                        <div class="bg-white p-3 md:p-5 rounded-2xl shadow-sm border-l-4 border-blue-500">
+                            <p class="text-[10px] md:text-xs text-slate-500 font-semibold uppercase">Total en Bancos</p>
+                            <h3 id="stat-total-banks" class="text-base md:text-xl font-bold text-slate-800 mt-1">$0.000</h3>
+                        </div>
+                        <div class="bg-white p-3 md:p-5 rounded-2xl shadow-sm border-l-4 border-rose-500">
+                            <p class="text-[10px] md:text-xs text-slate-500 font-semibold uppercase">Gastos Pendientes</p>
+                            <h3 id="stat-total-expenses" class="text-base md:text-xl font-bold text-slate-800 mt-1">$0.000</h3>
+                        </div>
+                        <div class="bg-white p-3 md:p-5 rounded-2xl shadow-sm border-l-4 border-purple-600 bg-purple-50/20">
+                            <p class="text-[10px] md:text-xs text-purple-700 font-bold uppercase flex items-center gap-1">
+                                <i class="fa-solid fa-hand-holding-dollar"></i> Cartera Total
+                            </p>
+                            <h3 id="stat-total-cartera" class="text-base md:text-xl font-bold text-purple-900 mt-1">$0.000</h3>
+                        </div>
+                        <div class="bg-white p-3 md:p-5 rounded-2xl shadow-sm border-l-4 border-teal-500">
+                            <p class="text-[10px] md:text-xs text-slate-500 font-semibold uppercase">Balance Neto</p>
+                            <h3 id="stat-net-balance" class="text-base md:text-xl font-bold text-slate-800 mt-1">$0.000</h3>
+                        </div>
+                        <div class="bg-white p-3 md:p-5 rounded-2xl shadow-sm border-l-4 border-indigo-500">
+                            <p class="text-[10px] md:text-xs text-slate-500 font-semibold uppercase">Transacciones</p>
+                            <h3 id="stat-total-trans" class="text-base md:text-xl font-bold text-slate-800 mt-1">0</h3>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-4 md:p-6 rounded-2xl shadow-sm flex flex-col md:flex-row justify-between items-center gap-3 border border-slate-100">
+                        <div>
+                            <h3 class="text-base md:text-lg font-bold text-slate-800 flex items-center gap-2">
+                                <i class="fa-solid fa-file-invoice text-emerald-600"></i> Reporte Diario de Operaciones
+                            </h3>
+                            <p class="text-xs text-slate-500 mt-1">Genera un documento profesional (.txt / .doc) con el resumen detallado para WhatsApp.</p>
+                        </div>
+                        <button onclick="downloadAndSendDailyReport()" class="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-2.5 rounded-xl transition shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2 text-xs md:text-sm">
+                            <i class="fa-brands fa-whatsapp text-base"></i> Reporte por WhatsApp
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+                        <div class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-100">
+                            <h3 class="text-base md:text-lg font-bold text-slate-800 mb-3 flex items-center gap-2">
+                                <i class="fa-solid fa-chart-line text-emerald-600"></i> Flujo Financiero
+                            </h3>
+                            <div class="relative h-60 md:h-72">
+                                <canvas id="chartFinancial"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-100">
+                            <h3 class="text-base md:text-lg font-bold text-slate-800 mb-3 flex items-center gap-2">
+                                <i class="fa-solid fa-chart-pie text-blue-600"></i> Métodos de Pago
+                            </h3>
+                            <div class="relative h-60 md:h-72 flex justify-center">
+                                <canvas id="chartPaymentMethods"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-100">
+                        <h3 class="text-base md:text-lg font-bold text-slate-800 mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-chart-column text-amber-600"></i> Ventas por Categoría
+                        </h3>
+                        <div class="relative h-60 md:h-72">
+                            <canvas id="chartCategories"></canvas>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VISTA 8: REPORTES -->
+                <section id="view-reports" class="hidden space-y-4 md:space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-6">
+                        <div class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border-l-4 border-emerald-500">
+                            <p class="text-xs md:text-sm text-slate-500 font-medium">Ventas Totales Registradas</p>
+                            <h3 id="rep-total-sales" class="text-xl md:text-2xl font-bold text-slate-800 mt-1">$0.000</h3>
+                        </div>
+                        <div class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border-l-4 border-blue-500">
+                            <p class="text-xs md:text-sm text-slate-500 font-medium">Transacciones Realizadas</p>
+                            <h3 id="rep-total-trans" class="text-xl md:text-2xl font-bold text-slate-800 mt-1">0</h3>
+                        </div>
+                        <div class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border-l-4 border-amber-500">
+                            <p class="text-xs md:text-sm text-slate-500 font-medium">Productos en Inventario</p>
+                            <h3 id="rep-total-products" class="text-xl md:text-2xl font-bold text-slate-800 mt-1">0</h3>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-sm p-4 md:p-6 space-y-4">
+                        <h3 class="text-base md:text-lg font-bold text-slate-800">Historial y Resumen de Ventas</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse min-w-[550px]">
+                                <thead>
+                                    <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 text-xs font-bold uppercase">
+                                        <th class="p-3">Fecha</th>
+                                        <th class="p-3">Cliente</th>
+                                        <th class="p-3">Método / Cuenta</th>
+                                        <th class="p-3">Detalle</th>
+                                        <th class="p-3 text-right">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reports-sales-table-body" class="divide-y divide-slate-100 text-xs md:text-sm text-slate-700"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- MODALES DE REGISTRO E INTERACCIÓN -->
+    <div id="product-modal" class="fixed inset-0 bg-slate-900/50 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4">
+            <h3 id="modal-product-title" class="text-lg font-bold text-slate-800">Nuevo Artículo</h3>
+            <input type="hidden" id="prod-id">
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Nombre del Artículo</label>
+                <input type="text" id="prod-name" class="w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Categoría</label>
+                <input type="text" id="prod-category" class="w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Precio de Venta ($)</label>
+                    <input type="number" id="prod-price" class="w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Stock</label>
+                    <input type="number" id="prod-stock" class="w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeProductModal()" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl transition text-xs font-medium">Cancelar</button>
+                <button onclick="saveProduct()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition text-xs font-semibold">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CLIENTE CON DEUDA INICIAL -->
+    <div id="client-modal" class="fixed inset-0 bg-slate-900/50 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4">
+            <h3 id="modal-client-title" class="text-lg font-bold text-slate-800">Registrar Cliente</h3>
+            <input type="hidden" id="cli-id">
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Nombre del Cliente</label>
+                <input type="text" id="cli-name" class="w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm" placeholder="Ej. Juan Pérez">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Teléfono</label>
+                <input type="text" id="cli-phone" class="w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm" placeholder="Ej. +57 300 000 0000">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Deuda Manual / Inicial ($)</label>
+                <input type="number" id="cli-debt" class="w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 font-bold text-rose-600 text-sm" placeholder="0.000" value="0">
+                <p class="text-[11px] text-slate-400 mt-1">Puedes definir el valor de la deuda inicial directamente aquí.</p>
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeClientModal()" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl transition text-xs font-medium">Cancelar</button>
+                <button onclick="saveClient()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition text-xs font-semibold">Guardar Cliente</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PANEL MODAL EXCLUSIVO PARA ABONOS DE CLIENTES -->
+    <div id="payment-modal" class="fixed inset-0 bg-slate-900/50 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4">
+            <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <i class="fa-solid fa-hand-holding-dollar text-emerald-600"></i>
+                <span>Registrar Abono de Cliente</span>
+            </h3>
+            <input type="hidden" id="pay-cli-id">
+            
+            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-1">
+                <span class="text-xs text-slate-400 font-semibold uppercase">Cliente</span>
+                <h4 id="pay-cli-name" class="font-bold text-slate-800"></h4>
+                <div class="flex justify-between items-center text-sm pt-1">
+                    <span class="text-slate-500">Deuda Actual:</span>
+                    <span id="pay-cli-debt" class="font-bold text-rose-600"></span>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Monto a Abonar ($)</label>
+                <input type="number" id="pay-amount" class="w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 font-bold text-slate-800 text-lg" placeholder="0.000">
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Cuenta Receptora (Suma al saldo)</label>
+                <select id="pay-account" class="w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-medium bg-slate-50"></select>
+            </div>
+
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closePaymentModal()" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl transition text-xs font-medium">Cancelar</button>
+                <button onclick="submitClientPayment()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition text-xs font-semibold">Procesar Abono</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE HISTORIAL DE ABONOS DE CLIENTES -->
+    <div id="client-history-modal" class="fixed inset-0 bg-slate-900/50 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4">
+            <div class="flex justify-between items-center border-b pb-3">
+                <div>
+                    <h3 id="client-history-name" class="text-lg font-bold text-slate-800">Historial de Abonos</h3>
+                    <p class="text-xs text-slate-500">Registro completo de pagos realizados por el cliente.</p>
+                </div>
+                <span id="client-history-debt" class="px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800"></span>
+            </div>
+
+            <div class="space-y-2">
+                <div class="max-h-60 overflow-y-auto border rounded-xl divide-y text-xs" id="client-history-list"></div>
+            </div>
+
+            <div class="flex justify-end pt-2">
+                <button onclick="closeClientHistoryModal()" class="px-5 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl transition text-xs font-semibold">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PARA HISTORIAL Y ABONOS DE CUENTAS POR PAGAR (PROVEEDORES) -->
+    <div id="payable-history-modal" class="fixed inset-0 bg-slate-900/50 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 id="payable-modal-title" class="text-lg font-bold text-slate-800">Historial & Abonos Factura</h3>
+                <span id="payable-modal-status" class="px-2.5 py-1 rounded-full text-xs font-bold"></span>
+            </div>
+
+            <input type="hidden" id="payable-inv-id">
+
+            <div class="grid grid-cols-2 gap-3 bg-slate-50 p-3 rounded-xl border text-sm">
+                <div>
+                    <span class="text-xs text-slate-400 block uppercase font-semibold">Monto Total Factura</span>
+                    <span id="payable-modal-total" class="font-bold text-slate-800"></span>
+                </div>
+                <div>
+                    <span class="text-xs text-slate-400 block uppercase font-semibold">Saldo Pendiente</span>
+                    <span id="payable-modal-balance" class="font-bold text-rose-600"></span>
+                </div>
+            </div>
+
+            <div id="payable-payment-form" class="space-y-3 bg-emerald-50/50 p-3 rounded-xl border border-emerald-100">
+                <h4 class="text-xs font-bold uppercase text-emerald-800">Registrar Nuevo Abono</h4>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-500 uppercase">Monto Abono ($)</label>
+                        <input type="number" id="payable-pay-amount" class="w-full px-3 py-1.5 border rounded-lg text-sm bg-white font-bold" placeholder="0.000">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-500 uppercase">Cuenta Origen</label>
+                        <select id="payable-pay-account" class="w-full px-3 py-1.5 border rounded-lg text-sm bg-white font-medium"></select>
+                    </div>
+                </div>
+                <button onclick="submitPayablePayment()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 rounded-xl text-xs transition">
+                    Procesar Abono a Proveedor
+                </button>
+            </div>
+
+            <div class="space-y-2">
+                <h4 class="text-xs font-bold uppercase text-slate-500">Historial de Pagos Realizados</h4>
+                <div class="max-h-40 overflow-y-auto border rounded-xl divide-y text-xs" id="payable-payments-list"></div>
+            </div>
+
+            <div class="flex justify-end pt-2">
+                <button onclick="closePayableHistoryModal()" class="px-5 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl transition text-xs font-semibold">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="account-modal" class="fixed inset-0 bg-slate-900/50 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4">
+            <h3 class="text-lg font-bold text-slate-800">Gestión de Cuenta / Caja</h3>
+            <input type="hidden" id="acc-id">
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Nombre de la Cuenta (Ej: Caja General, Bancolombia)</label>
+                <input type="text" id="acc-name" class="w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Tipo</label>
+                <select id="acc-type" class="w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm">
+                    <option value="Efectivo">Efectivo</option>
+                    <option value="Banco">Banco</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Saldo Inicial ($)</label>
+                <input type="number" id="acc-balance" class="w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm">
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeAccountModal()" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl transition text-xs font-medium">Cancelar</button>
+                <button onclick="saveAccount()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition text-xs font-semibold">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="provider-modal" class="fixed inset-0 bg-slate-900/50 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4">
+            <h3 class="text-lg font-bold text-slate-800">Directorio de Proveedores</h3>
+            <div class="space-y-3 bg-slate-50 p-4 rounded-xl border">
+                <h4 class="text-xs font-bold uppercase text-slate-500">Registrar Nuevo Proveedor</h4>
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="text" id="prov-name" placeholder="Nombre empresa/proveedor" class="px-3 py-2 border rounded-xl text-xs bg-white">
+                    <input type="text" id="prov-phone" placeholder="Teléfono" class="px-3 py-2 border rounded-xl text-xs bg-white">
+                </div>
+                <button onclick="saveProvider()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-semibold py-2 rounded-xl text-xs transition">Guardar Proveedor</button>
+            </div>
+            <div class="max-h-48 overflow-y-auto space-y-2" id="provider-list-container"></div>
+            <div class="flex justify-end pt-2">
+                <button onclick="closeProviderModal()" class="px-5 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl transition text-xs font-semibold">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EDITABLE PARA FACTURA DE COMPRA -->
+    <div id="fact-purchase-modal" class="fixed inset-0 bg-slate-900/50 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+            <h3 id="modal-fact-purchase-title" class="text-lg font-bold text-slate-800">Factura de Compra</h3>
+            <input type="hidden" id="fact-pur-id">
+            
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Número de Factura</label>
+                    <input type="text" id="fact-pur-num" class="w-full px-3 py-2 border rounded-xl text-sm" placeholder="FAC-001">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Proveedor</label>
+                    <select id="fact-pur-provider" class="w-full px-3 py-2 border rounded-xl text-sm"></select>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Fecha de Factura</label>
+                <input type="date" id="fact-pur-date" class="w-full px-3 py-2 border rounded-xl text-sm">
+            </div>
+
+            <div class="border-t pt-3 space-y-2">
+                <div class="flex justify-between items-center">
+                    <h4 class="text-xs font-bold uppercase text-slate-600">Detalle de Artículos</h4>
+                    <button onclick="addFactPurchaseItemRow()" class="text-xs text-emerald-600 font-bold hover:underline">+ Agregar Ítem</button>
+                </div>
+                <div id="fact-pur-items-container" class="space-y-2"></div>
+            </div>
+
+            <div class="border-t pt-2 flex justify-between items-center font-bold text-sm">
+                <span>Monto Total:</span>
+                <span id="fact-pur-total-display" class="text-emerald-600 text-base">$0.000</span>
+            </div>
+
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeFactPurchaseModal()" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl transition text-xs font-medium">Cancelar</button>
+                <button onclick="saveFactPurchase()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition text-xs font-semibold">Guardar e Integrar con Cuentas x Pagar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EDITABLE PARA FACTURA VENTA A CRÉDITO -->
+    <div id="fact-credit-sale-modal" class="fixed inset-0 bg-slate-900/50 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+            <h3 id="modal-fact-credit-sale-title" class="text-lg font-bold text-slate-800">Factura de Venta a Crédito</h3>
+            <input type="hidden" id="fact-sale-id">
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Cliente</label>
+                    <select id="fact-sale-client" class="w-full px-3 py-2 border rounded-xl text-sm"></select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Fecha</label>
+                    <input type="text" id="fact-sale-date" readonly class="w-full px-3 py-2 border rounded-xl text-sm bg-slate-50 text-slate-500">
+                </div>
+            </div>
+
+            <div class="border-t pt-3 space-y-2">
+                <div class="flex justify-between items-center">
+                    <h4 class="text-xs font-bold uppercase text-slate-600">Detalle de Artículos Vendidos</h4>
+                    <button onclick="addFactCreditSaleItemRow()" class="text-xs text-amber-600 font-bold hover:underline">+ Agregar Ítem</button>
+                </div>
+                <div id="fact-sale-items-container" class="space-y-2"></div>
+            </div>
+
+            <div class="border-t pt-2 flex justify-between items-center font-bold text-sm">
+                <span>Monto Total:</span>
+                <span id="fact-sale-total-display" class="text-amber-600 text-base">$0.000</span>
+            </div>
+
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeFactCreditSaleModal()" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl transition text-xs font-medium">Cancelar</button>
+                <button onclick="saveFactCreditSale()" class="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl transition text-xs font-semibold">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT DE FUNCIONALIDAD -->
+    <script>
+        function toggleMobileMoreMenu() {
+            const menu = document.getElementById('mobile-more-menu');
+            if (menu) menu.classList.toggle('hidden');
+        }
+
+        function parseLicense(licenseKey) {
+            if (!licenseKey) return null;
+            const match = licenseKey.trim().toUpperCase().match(/^LIC-(\d{4})-(\d{2})-(\d{2})-[A-Z0-9]+$/);
+            if (!match) return null;
+
+            const year = parseInt(match[1]);
+            const month = parseInt(match[2]) - 1;
+            const day = parseInt(match[3]);
+
+            return new Date(year, month, day, 23, 59, 59);
+        }
+
+        function isLicenseUsed(licenseKey) {
+            const usedLicenses = JSON.parse(localStorage.getItem('pos_used_licenses')) || [];
+            return usedLicenses.includes(licenseKey.trim().toUpperCase());
+        }
+
+        function markLicenseAsUsed(licenseKey) {
+            const usedLicenses = JSON.parse(localStorage.getItem('pos_used_licenses')) || [];
+            const keyUpper = licenseKey.trim().toUpperCase();
+            if (!usedLicenses.includes(keyUpper)) {
+                usedLicenses.push(keyUpper);
+                localStorage.setItem('pos_used_licenses', JSON.stringify(usedLicenses));
+            }
+        }
+
+        function checkLicenseOnLoad() {
+            const savedLicense = localStorage.getItem('pos_license_key');
+
+            if (!savedLicense) {
+                showLicenseScreen();
+                return;
+            }
+
+            const expiryDate = parseLicense(savedLicense);
+            const now = new Date();
+
+            if (!expiryDate || isNaN(expiryDate.getTime())) {
+                localStorage.removeItem('pos_license_key');
+                showLicenseScreen('❌ Formato de licencia inválido.');
+                return;
+            }
+
+            if (now > expiryDate) {
+                localStorage.removeItem('pos_license_key');
+                showLicenseScreen('⚠️ Tu licencia ha expirado. Por favor renuévala con el administrador.');
+                return;
+            }
+
+            document.getElementById('license-screen').classList.add('hidden');
+            document.getElementById('app-container').classList.remove('hidden');
+            
+            const expFormatted = expiryDate.toLocaleDateString();
+            
+            const desktopDisplay = document.getElementById('license-expiry-display');
+            if (desktopDisplay) desktopDisplay.innerText = `Licencia activa hasta: ${expFormatted}`;
+
+            const mobileDisplay = document.getElementById('license-expiry-display-mobile');
+            if (mobileDisplay) mobileDisplay.innerText = `Licencia activa hasta: ${expFormatted}`;
+        }
+
+        function showLicenseScreen(errorMsg = '') {
+            document.getElementById('license-screen').classList.remove('hidden');
+            document.getElementById('app-container').classList.add('hidden');
+            const errEl = document.getElementById('license-error');
+            if (errorMsg) {
+                errEl.innerText = errorMsg;
+                errEl.classList.remove('hidden');
+            } else {
+                errEl.classList.add('hidden');
+            }
+        }
+
+        function activateLicense() {
+            const inputKey = document.getElementById('license-input').value.trim().toUpperCase();
+            const activeLicense = (localStorage.getItem('pos_license_key') || '').trim().toUpperCase();
+
+            if (!inputKey) {
+                showLicenseScreen('❌ Ingresa una clave de licencia.');
+                return;
+            }
+
+            const expiryDate = parseLicense(inputKey);
+            const now = new Date();
+
+            if (!expiryDate || isNaN(expiryDate.getTime())) {
+                showLicenseScreen('❌ Código de licencia no válido.');
+                return;
+            }
+
+            if (inputKey !== activeLicense && isLicenseUsed(inputKey)) {
+                showLicenseScreen('❌ Esta licencia ya ha sido utilizada anteriormente. Debes ingresar otra licencia nueva.');
+                return;
+            }
+
+            if (now > expiryDate) {
+                showLicenseScreen('⚠️ La licencia que ingresaste ya ha caducado.');
+                return;
+            }
+
+            markLicenseAsUsed(inputKey);
+            localStorage.setItem('pos_license_key', inputKey);
+            document.getElementById('license-input').value = '';
+            alert('¡Licencia activada con éxito!');
+            checkLicenseOnLoad();
+        }
+
+        function logoutLicense() {
+            if (confirm('¿Deseas desvincular o cambiar la clave de licencia actual? Recordatorio: La licencia actual expira en uso y requerirás una nueva.')) {
+                localStorage.removeItem('pos_license_key');
+                checkLicenseOnLoad();
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            checkLicenseOnLoad();
+            refreshAllUI();
+        });
+
+        // --- BASE DE DATOS Y ESTADO GLOBAL ---
+        let state = {
+            products: JSON.parse(localStorage.getItem('pos_products')) || [],
+            cart: [],
+            sales: JSON.parse(localStorage.getItem('pos_sales')) || [],
+            clients: JSON.parse(localStorage.getItem('pos_clients')) || [],
+            accounts: JSON.parse(localStorage.getItem('pos_accounts')) || [
+                { id: 1, name: 'Caja General', type: 'Efectivo', balance: 0 },
+                { id: 2, name: 'Cuenta Bancolombia', type: 'Banco', balance: 0 }
+            ],
+            providers: JSON.parse(localStorage.getItem('pos_providers')) || [],
+            payables: JSON.parse(localStorage.getItem('pos_payables')) || [],
+            cashRegister: JSON.parse(localStorage.getItem('pos_cash')) || { isOpen: false, initialAmount: 0, openTime: null, startTimeStamp: null },
+            cashHistory: JSON.parse(localStorage.getItem('pos_cash_history')) || []
+        };
+
+        saveData();
+
+        function saveData() {
+            localStorage.setItem('pos_products', JSON.stringify(state.products));
+            localStorage.setItem('pos_sales', JSON.stringify(state.sales));
+            localStorage.setItem('pos_clients', JSON.stringify(state.clients));
+            localStorage.setItem('pos_accounts', JSON.stringify(state.accounts));
+            localStorage.setItem('pos_providers', JSON.stringify(state.providers));
+            localStorage.setItem('pos_payables', JSON.stringify(state.payables));
+            localStorage.setItem('pos_cash', JSON.stringify(state.cashRegister));
+            localStorage.setItem('pos_cash_history', JSON.stringify(state.cashHistory));
+        }
+
+        let chartFinancialInstance = null;
+        let chartPaymentMethodsInstance = null;
+        let chartCategoriesInstance = null;
+
+        function exportToExcel() {
+            const wb = XLSX.utils.book_new();
+
+            const wsProducts = XLSX.utils.json_to_sheet(state.products);
+            XLSX.utils.book_append_sheet(wb, wsProducts, "Productos");
+
+            const salesFormatted = state.sales.map(s => ({
+                ID: s.id,
+                Fecha: s.date,
+                Cliente: s.clientName || 'Cliente Ocasional',
+                Metodo: s.method,
+                Cuenta: s.account,
+                Total: s.total,
+                Detalles: JSON.stringify(s.items)
+            }));
+            const wsSales = XLSX.utils.json_to_sheet(salesFormatted);
+            XLSX.utils.book_append_sheet(wb, wsSales, "Ventas");
+
+            const wsClients = XLSX.utils.json_to_sheet(state.clients);
+            XLSX.utils.book_append_sheet(wb, wsClients, "Clientes");
+
+            const wsAccounts = XLSX.utils.json_to_sheet(state.accounts);
+            XLSX.utils.book_append_sheet(wb, wsAccounts, "Cuentas");
+
+            const wsProviders = XLSX.utils.json_to_sheet(state.providers);
+            XLSX.utils.book_append_sheet(wb, wsProviders, "Proveedores");
+
+            const wsPayables = XLSX.utils.json_to_sheet(state.payables);
+            XLSX.utils.book_append_sheet(wb, wsPayables, "CuentasPorPagar");
+
+            const today = new Date().toISOString().split('T')[0];
+            XLSX.writeFile(wb, `Base_de_Datos_POS_${today}.xlsx`);
+        }
+
+        function importFromExcel(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+
+                    if (workbook.Sheets["Productos"]) {
+                        state.products = XLSX.utils.sheet_to_json(workbook.Sheets["Productos"]);
+                    }
+                    if (workbook.Sheets["Ventas"]) {
+                        const rawSales = XLSX.utils.sheet_to_json(workbook.Sheets["Ventas"]);
+                        state.sales = rawSales.map(s => ({
+                            id: s.ID,
+                            date: s.Fecha,
+                            clientName: s.Cliente || 'Cliente Ocasional',
+                            method: s.Metodo,
+                            account: s.Cuenta,
+                            total: parseFloat(s.Total),
+                            items: JSON.parse(s.Detalles || '[]')
+                        }));
+                    }
+                    if (workbook.Sheets["Clientes"]) {
+                        state.clients = XLSX.utils.sheet_to_json(workbook.Sheets["Clientes"]);
+                    }
+                    if (workbook.Sheets["Cuentas"]) {
+                        state.accounts = XLSX.utils.sheet_to_json(workbook.Sheets["Cuentas"]);
+                    }
+                    if (workbook.Sheets["Proveedores"]) {
+                        state.providers = XLSX.utils.sheet_to_json(workbook.Sheets["Proveedores"]);
+                    }
+                    if (workbook.Sheets["CuentasPorPagar"]) {
+                        state.payables = XLSX.utils.sheet_to_json(workbook.Sheets["CuentasPorPagar"]);
+                    }
+
+                    saveData();
+                    refreshAllUI();
+                    alert("¡Base de datos restaurada e importada correctamente desde Excel!");
+                } catch (error) {
+                    alert("Ocurrió un error al procesar el archivo de Excel. Asegúrate de que tenga el formato correcto.");
+                    console.error(error);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function refreshAllUI() {
+            renderPOSProducts();
+            renderCart();
+            renderInventory();
+            renderCashControl();
+            renderInvoicing();
+            renderAccounts();
+            renderPayables();
+            renderClients();
+            renderReports();
+            updateAccountSelects();
+            updateClientsDatalist();
+        }
+
+        function formatCOP(amount) {
+            const num = Number(amount || 0);
+            return '$' + num.toLocaleString('es-CO', {
+                minimumFractionDigits: 3,
+                maximumFractionDigits: 3
+            });
+        }
+
+        document.getElementById('current-date').innerText = new Date().toLocaleDateString();
+
+        function switchTab(tab) {
+            const tabs = ['pos', 'inventory', 'cash', 'invoicing', 'accounts', 'payables', 'clients', 'statistics', 'reports'];
+            tabs.forEach(t => {
+                const view = document.getElementById(`view-${t}`);
+                const btn = document.getElementById(`btn-${t}`);
+                const mobBtn = document.getElementById(`mob-btn-${t}`);
+
+                if (view) view.classList.add('hidden');
+                if (btn) {
+                    btn.classList.remove('bg-emerald-600', 'text-white');
+                    btn.classList.add('hover:bg-slate-800');
+                }
+                if (mobBtn) {
+                    mobBtn.classList.remove('text-emerald-400');
+                    mobBtn.classList.add('text-slate-400');
+                }
+            });
+
+            const activeView = document.getElementById(`view-${tab}`);
+            const activeBtn = document.getElementById(`btn-${tab}`);
+            const activeMobBtn = document.getElementById(`mob-btn-${tab}`);
+
+            if (activeView) activeView.classList.remove('hidden');
+            if (activeBtn) {
+                activeBtn.classList.add('bg-emerald-600', 'text-white');
+                activeBtn.classList.remove('hover:bg-slate-800');
+            }
+            if (activeMobBtn) {
+                activeMobBtn.classList.add('text-emerald-400');
+                activeMobBtn.classList.remove('text-slate-400');
+            }
+            
+            const titles = { 
+                pos: 'Terminal de Venta (POS)', 
+                inventory: 'Gestión de Inventario', 
+                cash: 'Control de Caja', 
+                invoicing: 'Módulo de Facturación',
+                accounts: 'Bancos y Efectivo',
+                payables: 'Cuentas por Pagar',
+                clients: 'Clientes y Créditos',
+                statistics: 'Estadísticas Profesionales',
+                reports: 'Reportes y Estadísticas' 
+            };
+            document.getElementById('page-title').innerText = titles[tab] || '';
+            if (tab === 'cash') renderCashControl();
+            if (tab === 'invoicing') renderInvoicing();
+            if (tab === 'accounts') renderAccounts();
+            if (tab === 'payables') renderPayables();
+            if (tab === 'statistics') renderStatistics();
+            if (tab === 'reports') renderReports();
+        }
+
+        function updateClientsDatalist() {
+            const datalist = document.getElementById('clients-datalist');
+            if (!datalist) return;
+            datalist.innerHTML = '';
+            state.clients.forEach(c => {
+                datalist.innerHTML += `<option value="${c.name}">`;
+            });
+        }
+
+        // --- CAMBIO: PRODUCTOS CON STOCK 0 DESAPARECEN DE VENTA POS ---
+        function renderPOSProducts(filter = '') {
+            const grid = document.getElementById('pos-product-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            
+            // Se realiza un filtro explícito para mostrar únicamente productos cuyo stock sea mayor a 0
+            const filtered = state.products.filter(p => 
+                (p.stock > 0) && 
+                (p.name.toLowerCase().includes(filter.toLowerCase()) || p.category.toLowerCase().includes(filter.toLowerCase()))
+            );
+            
+            if (filtered.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-10 text-slate-400 text-xs md:text-sm font-medium">No hay productos disponibles con stock en el POS.</div>`;
+                return;
+            }
+
+            filtered.forEach(p => {
+                grid.innerHTML += `
+                    <div onclick="addToCart(${p.id})" class="bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 p-2.5 md:p-4 rounded-xl cursor-pointer transition flex flex-col justify-between active:scale-95">
+                        <div>
+                            <span class="text-[10px] font-semibold text-emerald-600 uppercase block">${p.category}</span>
+                            <h4 class="font-bold text-slate-800 text-xs md:text-sm mt-0.5 line-clamp-2">${p.name}</h4>
+                        </div>
+                        <div class="flex justify-between items-center mt-2 pt-1 border-t border-slate-100">
+                            <span class="font-bold text-slate-900 text-xs md:text-sm">${formatCOP(p.price)}</span>
+                            <span class="text-[10px] md:text-xs text-slate-500 font-semibold">Stock: ${p.stock}</span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function filterPOSProducts() {
+            renderPOSProducts(document.getElementById('pos-search').value);
+        }
+
+        function addToCart(id) {
+            const product = state.products.find(p => p.id === id);
+            if (!product || product.stock <= 0) return alert('Producto sin stock disponible.');
+            
+            const item = state.cart.find(i => i.id === id);
+            if (item) {
+                if (item.qty < product.stock) item.qty++;
+                else alert('Stock máximo alcanzado.');
+            } else {
+                state.cart.push({ id: product.id, name: product.name, price: product.price, qty: 1 });
+            }
+            renderCart();
+        }
+
+        function renderCart() {
+            const container = document.getElementById('cart-items');
+            if (!container) return;
+            container.innerHTML = '';
+            let subtotal = 0;
+
+            if (state.cart.length === 0) {
+                container.innerHTML = '<p class="text-center text-slate-400 py-6 md:py-10 text-xs md:text-sm">El carrito está vacío</p>';
+            }
+
+            state.cart.forEach(item => {
+                subtotal += item.price * item.qty;
+                container.innerHTML += `
+                    <div class="flex flex-col bg-slate-50 p-2.5 rounded-xl gap-1.5 border border-slate-100">
+                        <div class="flex justify-between items-start">
+                            <h5 class="font-semibold text-xs md:text-sm text-slate-800 line-clamp-1">${item.name}</h5>
+                            <span class="text-xs font-bold text-slate-700">${formatCOP(item.price * item.qty)}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center gap-1">
+                                <span class="text-[10px] text-slate-400 font-bold">$</span>
+                                <input type="number" value="${item.price}" onchange="updateCartItemPrice(${item.id}, this.value)" class="w-16 md:w-20 px-1.5 py-0.5 border rounded text-xs text-slate-800 font-semibold focus:outline-none focus:ring-1 focus:ring-emerald-500" title="Editar Precio">
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button onclick="changeQty(${item.id}, -1)" class="w-6 h-6 bg-white border rounded flex items-center justify-center font-bold text-slate-600 hover:bg-slate-100 active:bg-slate-200 text-xs">-</button>
+                                <span class="text-xs md:text-sm font-semibold">${item.qty}</span>
+                                <button onclick="changeQty(${item.id}, 1)" class="w-6 h-6 bg-white border rounded flex items-center justify-center font-bold text-slate-600 hover:bg-slate-100 active:bg-slate-200 text-xs">+</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('cart-subtotal').innerText = formatCOP(subtotal);
+            document.getElementById('cart-total').innerText = formatCOP(subtotal);
+        }
+
+        function updateCartItemPrice(id, newPrice) {
+            const val = parseFloat(newPrice);
+            if (isNaN(val) || val < 0) {
+                alert('Ingrese un precio válido.');
+                renderCart();
+                return;
+            }
+            const item = state.cart.find(i => i.id === id);
+            if (item) {
+                item.price = val;
+            }
+            renderCart();
+        }
+
+        function changeQty(id, delta) {
+            const item = state.cart.find(i => i.id === id);
+            const product = state.products.find(p => p.id === id);
+            if (!item) return;
+            item.qty += delta;
+            if (item.qty <= 0) {
+                state.cart = state.cart.filter(i => i.id !== id);
+            } else if (item.qty > product.stock) {
+                item.qty = product.stock;
+                alert('Stock límite alcanzado.');
+            }
+            renderCart();
+        }
+
+        function clearCart() {
+            state.cart = [];
+            document.getElementById('cart-client-name').value = '';
+            renderCart();
+        }
+
+        function sendInvoiceWhatsApp() {
+            if (state.cart.length === 0) return alert('El carrito está vacío.');
+
+            const clientName = document.getElementById('cart-client-name').value.trim() || 'Cliente Ocasional';
+            let total = 0;
+            let message = `🧾 *FACTURA DE VENTA*\n`;
+            message += `👤 Cliente: *${clientName}*\n`;
+            message += `📅 Fecha: ${new Date().toLocaleString()}\n`;
+            message += `-----------------------------------\n`;
+
+            state.cart.forEach((item, index) => {
+                const subtotalItem = item.price * item.qty;
+                total += subtotalItem;
+                message += `${index + 1}. *${item.name}*\n`;
+                message += `   Cant: ${item.qty} x ${formatCOP(item.price)} = ${formatCOP(subtotalItem)}\n`;
+            });
+
+            message += `-----------------------------------\n`;
+            message += `💰 *TOTAL A PAGAR: ${formatCOP(total)}*\n\n`;
+            message += `¡Gracias por su compra! 🙌`;
+
+            const encodedMsg = encodeURIComponent(message);
+            window.open(`https://api.whatsapp.com/send?text=${encodedMsg}`, '_blank');
+        }
+
+        function checkout(method) {
+            if (!state.cashRegister.isOpen) return alert('¡Debe abrir la caja antes de registrar ventas!');
+            if (state.cart.length === 0) return alert('El carrito está vacío.');
+
+            const clientNameInput = document.getElementById('cart-client-name').value.trim();
+            
+            if (method === 'Crédito' && !clientNameInput) {
+                return alert('Para realizar una venta a Crédito debe ingresar el Nombre del Cliente.');
+            }
+
+            const clientName = clientNameInput || 'Cliente Ocasional';
+            let accountName = 'N/A (Crédito)';
+            let account = null;
+
+            if (method !== 'Crédito') {
+                const accountId = parseInt(document.getElementById('checkout-account').value);
+                account = state.accounts.find(a => a.id === accountId);
+                if (!account) return alert('Seleccione una cuenta bancaria o de efectivo válida.');
+                accountName = account.name;
+            }
+
+            let total = state.cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+            
+            state.cart.forEach(item => {
+                const prod = state.products.find(p => p.id === item.id);
+                if (prod) prod.stock -= item.qty;
+            });
+
+            if (method !== 'Crédito' && account) {
+                account.balance += total;
+            } else if (method === 'Crédito') {
+                let clientObj = state.clients.find(c => c.name.toLowerCase() === clientName.toLowerCase());
+                if (clientObj) {
+                    clientObj.debt = parseFloat(clientObj.debt || 0) + total;
+                } else {
+                    clientObj = {
+                        id: Date.now(),
+                        name: clientName,
+                        phone: 'Sin registrar',
+                        debt: total,
+                        paymentsHistory: []
+                    };
+                    state.clients.push(clientObj);
+                }
+            }
+
+            state.sales.push({ 
+                id: Date.now(), 
+                timestamp: Date.now(),
+                clientName,
+                items: [...state.cart], 
+                total, 
+                method, 
+                account: accountName, 
+                date: new Date().toLocaleString() 
+            });
+
+            state.cart = [];
+            document.getElementById('cart-client-name').value = '';
+            saveData();
+            renderCart();
+            renderInventory();
+            renderAccounts();
+            renderClients();
+            renderReports();
+            if (!document.getElementById('view-cash').classList.contains('hidden')) {
+                renderCashControl();
+            }
+            if (!document.getElementById('view-statistics').classList.contains('hidden')) {
+                renderStatistics();
+            }
+            alert(`¡Venta completada con éxito (${method})!\nCliente: ${clientName}\nTotal: ${formatCOP(total)}\n${method === 'Crédito' ? 'Sumado a la deuda total del cliente' : 'Abonado a: ' + accountName}`);
+        }
+
+        function renderInventory() {
+            const tbody = document.getElementById('inventory-table-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            const query = document.getElementById('inv-search').value.toLowerCase();
+            const filtered = state.products.filter(p => p.name.toLowerCase().includes(query) || p.category.toLowerCase().includes(query));
+
+            filtered.forEach(p => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-3 md:p-4 font-semibold text-slate-800">${p.name} <span class="block text-[11px] font-normal text-slate-400">Cat: ${p.category} | Stock: ${p.stock}</span></td>
+                        <td class="p-3 md:p-4 font-medium text-emerald-600">${formatCOP(p.price)}</td>
+                        <td class="p-3 md:p-4 text-right space-x-2">
+                            <button onclick="editProduct(${p.id})" class="text-blue-600 hover:text-blue-800 font-medium p-1"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteProduct(${p.id})" class="text-rose-600 hover:text-rose-800 font-medium p-1"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+            renderPOSProducts();
+        }
+
+        function openProductModal(id = null) {
+            document.getElementById('product-modal').classList.remove('hidden');
+            if (id) {
+                const p = state.products.find(prod => prod.id === id);
+                document.getElementById('modal-product-title').innerText = 'Editar Artículo';
+                document.getElementById('prod-id').value = p.id;
+                document.getElementById('prod-name').value = p.name;
+                document.getElementById('prod-category').value = p.category;
+                document.getElementById('prod-price').value = p.price;
+                document.getElementById('prod-stock').value = p.stock;
+            } else {
+                document.getElementById('modal-product-title').innerText = 'Nuevo Artículo';
+                document.getElementById('prod-id').value = '';
+                document.getElementById('prod-name').value = '';
+                document.getElementById('prod-category').value = '';
+                document.getElementById('prod-price').value = '';
+                document.getElementById('prod-stock').value = '10';
+            }
+        }
+
+        function closeProductModal() {
+            document.getElementById('product-modal').classList.add('hidden');
+        }
+
+        function saveProduct() {
+            const id = document.getElementById('prod-id').value;
+            const name = document.getElementById('prod-name').value;
+            const category = document.getElementById('prod-category').value || 'General';
+            const price = parseFloat(document.getElementById('prod-price').value);
+            const stock = parseInt(document.getElementById('prod-stock').value);
+
+            if (!name || isNaN(price) || isNaN(stock)) return alert('Por favor complete todos los campos correctamente.');
+
+            if (id) {
+                const p = state.products.find(prod => prod.id == id);
+                p.name = name; p.category = category; p.price = price; p.stock = stock;
+            } else {
+                state.products.push({ id: Date.now(), name, category, price, stock });
+            }
+            saveData();
+            closeProductModal();
+            renderInventory();
+            renderReports();
+        }
+
+        function editProduct(id) { openProductModal(id); }
+        
+        function deleteProduct(id) {
+            const pin = prompt('Para borrar un artículo del inventario, ingresa el código de 4 cifras:');
+            if (pin === null) return;
+            if (pin.trim() !== '1106') {
+                return alert('Código incorrecto. No tienes permiso para borrar este artículo.');
+            }
+
+            if (confirm('¿Desea eliminar definitivamente este artículo?')) {
+                state.products = state.products.filter(p => p.id !== id);
+                saveData();
+                renderInventory();
+                renderReports();
+            }
+        }
+
+        // --- CAJA Y CIERRE ---
+        function renderCashControl() {
+            const container = document.getElementById('cash-control-content');
+            const badgeHeader = document.getElementById('cash-status-badge');
+            const badgeDesktop = document.getElementById('cash-status-badge-desktop');
+            const badgeTag = document.getElementById('cash-status-tag');
+            const historyBody = document.getElementById('cash-history-body');
+            if (!container) return;
+
+            if (historyBody) {
+                historyBody.innerHTML = '';
+                if (state.cashHistory.length === 0) {
+                    historyBody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400 text-xs">No hay cierres de caja registrados aún.</td></tr>`;
+                } else {
+                    [...state.cashHistory].reverse().forEach(ch => {
+                        historyBody.innerHTML += `
+                            <tr class="hover:bg-slate-50 transition">
+                                <td class="p-2.5 text-xs text-slate-600">${ch.openTime}</td>
+                                <td class="p-2.5 text-xs text-slate-600">${ch.closeTime}</td>
+                                <td class="p-2.5 font-medium text-slate-700">${formatCOP(ch.initialAmount)}</td>
+                                <td class="p-2.5 text-emerald-600 font-medium">${formatCOP(ch.cashSales)}</td>
+                                <td class="p-2.5 text-blue-600 font-medium">${formatCOP(ch.transferSales)}</td>
+                                <td class="p-2.5 text-amber-600 font-medium">${formatCOP(ch.creditSales || 0)}</td>
+                                <td class="p-2.5 font-bold text-slate-900 text-right">${formatCOP(ch.expectedCash)}</td>
+                            </tr>
+                        `;
+                    });
+                }
+            }
+
+            const activeClass = 'px-2.5 py-0.5 bg-emerald-100 text-emerald-800 rounded-full text-xs font-semibold';
+            const closedClass = 'px-2.5 py-0.5 bg-amber-100 text-amber-800 rounded-full text-xs font-semibold';
+
+            if (state.cashRegister.isOpen) {
+                if (badgeHeader) { badgeHeader.innerText = 'Caja Abierta'; badgeHeader.className = activeClass; }
+                if (badgeDesktop) { badgeDesktop.innerText = 'Caja Abierta'; badgeDesktop.className = activeClass; }
+                if (badgeTag) { badgeTag.innerText = 'Caja Abierta'; badgeTag.className = activeClass; }
+
+                const shiftSales = state.sales.filter(s => (s.timestamp || 0) >= state.cashRegister.startTimeStamp);
+                const cashSales = shiftSales.filter(s => s.method === 'Efectivo').reduce((sum, s) => sum + s.total, 0);
+                const transferSales = shiftSales.filter(s => s.method === 'Transferencia').reduce((sum, s) => sum + s.total, 0);
+                const creditSales = shiftSales.filter(s => s.method === 'Crédito').reduce((sum, s) => sum + s.total, 0);
+                const totalSales = cashSales + transferSales + creditSales;
+                const expectedInCash = state.cashRegister.initialAmount + cashSales;
+
+                container.innerHTML = `
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+                        <div class="bg-slate-50 p-3 md:p-4 rounded-xl border">
+                            <span class="text-[10px] md:text-xs font-semibold text-slate-400 uppercase">Hora de Apertura</span>
+                            <h4 class="text-xs md:text-sm font-bold text-slate-800 mt-1">${state.cashRegister.openTime}</h4>
+                        </div>
+                        <div class="bg-slate-50 p-3 md:p-4 rounded-xl border">
+                            <span class="text-[10px] md:text-xs font-semibold text-slate-400 uppercase">Fondo Inicial</span>
+                            <h4 class="text-base md:text-lg font-bold text-slate-800 mt-1">${formatCOP(state.cashRegister.initialAmount)}</h4>
+                        </div>
+                        <div class="bg-slate-50 p-3 md:p-4 rounded-xl border">
+                            <span class="text-[10px] md:text-xs font-semibold text-slate-400 uppercase">Ventas del Turno</span>
+                            <h4 class="text-base md:text-lg font-bold text-emerald-600 mt-1">${formatCOP(totalSales)}</h4>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900 text-slate-200 p-4 md:p-5 rounded-2xl space-y-2.5">
+                        <h3 class="text-xs md:text-sm font-bold uppercase tracking-wider text-emerald-400 border-b border-slate-800 pb-2">Arqueo de Caja Actual</h3>
+                        <div class="flex justify-between text-xs md:text-sm">
+                            <span>Fondo Base (Efectivo inicial):</span>
+                            <span class="font-semibold text-white">${formatCOP(state.cashRegister.initialAmount)}</span>
+                        </div>
+                        <div class="flex justify-between text-xs md:text-sm">
+                            <span>(+) Ventas en Efectivo:</span>
+                            <span class="font-semibold text-emerald-400">${formatCOP(cashSales)}</span>
+                        </div>
+                        <div class="flex justify-between text-xs md:text-sm">
+                            <span>(+) Ventas por Transferencia / Banco:</span>
+                            <span class="font-semibold text-blue-400">${formatCOP(transferSales)}</span>
+                        </div>
+                        <div class="flex justify-between text-xs md:text-sm">
+                            <span>(Informatorio) Ventas a Crédito:</span>
+                            <span class="font-semibold text-amber-400">${formatCOP(creditSales)}</span>
+                        </div>
+                        <div class="border-t border-slate-800 pt-3 flex justify-between items-center text-sm md:text-base font-bold">
+                            <span class="text-white">Efectivo Total Esperado:</span>
+                            <span class="text-lg md:text-xl text-emerald-400">${formatCOP(expectedInCash)}</span>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3 pt-2">
+                        <button onclick="closeCash()" class="flex-1 bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-rose-600/20 text-xs md:text-sm flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-lock"></i> Realizar Cierre de Caja
+                        </button>
+                    </div>
+                `;
+            } else {
+                if (badgeHeader) { badgeHeader.innerText = 'Caja Cerrada'; badgeHeader.className = closedClass; }
+                if (badgeDesktop) { badgeDesktop.innerText = 'Caja Cerrada'; badgeDesktop.className = closedClass; }
+                if (badgeTag) { badgeTag.innerText = 'Caja Cerrada'; badgeTag.className = closedClass; }
+
+                container.innerHTML = `
+                    <div class="max-w-md mx-auto space-y-4 py-2 md:py-4">
+                        <div class="text-center space-y-1">
+                            <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto text-xl mb-2">
+                                <i class="fa-solid fa-door-closed"></i>
+                            </div>
+                            <h3 class="font-bold text-slate-800 text-base md:text-lg">Apertura de Turno de Caja</h3>
+                            <p class="text-xs text-slate-500">Ingresa el valor del dinero físico en caja para iniciar operaciones.</p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Monto / Fondo Inicial ($)</label>
+                            <input type="number" id="cash-initial" class="w-full px-4 py-2.5 md:py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 font-bold text-slate-800 text-center text-base md:text-lg" placeholder="0.000" value="0">
+                        </div>
+                        <button onclick="openCash()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-emerald-600/20 text-xs md:text-sm flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-key"></i> Abrir Caja Registradora
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        function openCash() {
+            const amountInput = document.getElementById('cash-initial');
+            const amount = parseFloat(amountInput ? amountInput.value : 0);
+            if (isNaN(amount) || amount < 0) return alert('Ingrese un monto inicial válido.');
+
+            state.cashRegister = { 
+                isOpen: true, 
+                initialAmount: amount, 
+                openTime: new Date().toLocaleString(),
+                startTimeStamp: Date.now()
+            };
+
+            saveData();
+            renderCashControl();
+            if (!document.getElementById('view-statistics').classList.contains('hidden')) {
+                renderStatistics();
+            }
+            alert('¡Caja abierta exitosamente! Ya puede registrar ventas.');
+        }
+
+        function closeCash() {
+            if (!confirm('¿Seguro que desea cerrar caja? Se generará el reporte de cuadre de turno.')) return;
+
+            const shiftSales = state.sales.filter(s => (s.timestamp || 0) >= state.cashRegister.startTimeStamp);
+            const cashSales = shiftSales.filter(s => s.method === 'Efectivo').reduce((sum, s) => sum + s.total, 0);
+            const transferSales = shiftSales.filter(s => s.method === 'Transferencia').reduce((sum, s) => sum + s.total, 0);
+            const creditSales = shiftSales.filter(s => s.method === 'Crédito').reduce((sum, s) => sum + s.total, 0);
+            const expectedCash = state.cashRegister.initialAmount + cashSales;
+            const closeTime = new Date().toLocaleString();
+
+            state.cashHistory.push({
+                id: Date.now(),
+                openTime: state.cashRegister.openTime,
+                closeTime,
+                initialAmount: state.cashRegister.initialAmount,
+                cashSales,
+                transferSales,
+                creditSales,
+                expectedCash
+            });
+
+            const initialVal = state.cashRegister.initialAmount || 0;
+            state.cashRegister = { isOpen: false, initialAmount: 0, openTime: null, startTimeStamp: null };
+            saveData();
+            renderCashControl();
+            if (!document.getElementById('view-statistics').classList.contains('hidden')) {
+                renderStatistics();
+            }
+
+            alert(`✅ Cierre de caja completado.\n\n` +
+                  `-----------------------------------\n` +
+                  `Fondo Inicial: ${formatCOP(initialVal)}\n` +
+                  `Ventas en Efectivo: ${formatCOP(cashSales)}\n` +
+                  `Ventas en Transferencia: ${formatCOP(transferSales)}\n` +
+                  `Ventas en Crédito: ${formatCOP(creditSales)}\n` +
+                  `-----------------------------------\n` +
+                  `TOTAL EFECTIVO EN CAJA: ${formatCOP(expectedCash)}`);
+        }
+
+        // --- FACTURACIÓN ---
+        function switchFactTab(tab) {
+            const btnPur = document.getElementById('tab-btn-fact-purchase');
+            const btnSale = document.getElementById('tab-btn-fact-credit-sale');
+            const subPur = document.getElementById('fact-sub-purchase');
+            const subSale = document.getElementById('fact-sub-credit-sale');
+
+            if (tab === 'purchase') {
+                btnPur.className = 'pb-2 font-bold text-sm text-emerald-600 border-b-2 border-emerald-600';
+                btnSale.className = 'pb-2 font-bold text-sm text-slate-400 hover:text-slate-600 border-b-2 border-transparent';
+                subPur.classList.remove('hidden');
+                subSale.classList.add('hidden');
+            } else {
+                btnSale.className = 'pb-2 font-bold text-sm text-amber-600 border-b-2 border-amber-600';
+                btnPur.className = 'pb-2 font-bold text-sm text-slate-400 hover:text-slate-600 border-b-2 border-transparent';
+                subSale.classList.remove('hidden');
+                subPur.classList.add('hidden');
+            }
+        }
+
+        function renderInvoicing() {
+            renderFactPurchases();
+            renderFactCreditSales();
+        }
+
+        function calculateDaysElapsed(dateStr) {
+            if (!dateStr) return 0;
+            const factDate = new Date(dateStr);
+            const today = new Date();
+            const diffTime = today - factDate;
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays >= 0 ? diffDays : 0;
+        }
+
+        function renderFactPurchases() {
+            const tbody = document.getElementById('fact-purchase-table-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            if (state.payables.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400 text-sm">No hay facturas de compra registradas.</td></tr>`;
+                return;
+            }
+
+            state.payables.forEach(inv => {
+                const provider = state.providers.find(p => p.id == inv.providerId);
+                const provName = provider ? provider.name : 'Proveedor Desconocido';
+                const days = calculateDaysElapsed(inv.factDate || inv.date);
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-3 font-semibold text-slate-800">${inv.invoiceNum}</td>
+                        <td class="p-3 text-slate-700">${provName}</td>
+                        <td class="p-3 text-slate-500 text-xs">${inv.factDate || inv.date}</td>
+                        <td class="p-3 text-slate-700 font-medium">${days} día(s)</td>
+                        <td class="p-3 font-bold text-emerald-600">${formatCOP(inv.total)}</td>
+                        <td class="p-3 text-right space-x-1">
+                            <button onclick="editFactPurchase(${inv.id})" class="text-blue-600 hover:text-blue-800 p-1"><i class="fa-solid fa-pen"></i> Editar</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        let currentFactPurItems = [];
+
+        function updateFactPurProvidersSelect() {
+            const sel = document.getElementById('fact-pur-provider');
+            if (!sel) return;
+            sel.innerHTML = '';
+            state.providers.forEach(p => {
+                sel.innerHTML += `<option value="${p.id}">${p.name}</option>`;
+            });
+        }
+
+        function openNewFactPurchaseModal() {
+            if (state.providers.length === 0) return alert('Primero debe registrar al menos un proveedor en el sistema.');
+            updateFactPurProvidersSelect();
+
+            document.getElementById('modal-fact-purchase-title').innerText = 'Nueva Factura de Compra';
+            document.getElementById('fact-pur-id').value = '';
+            document.getElementById('fact-pur-num').value = 'FAC-' + Math.floor(1000 + Math.random() * 9000);
+            document.getElementById('fact-pur-date').value = new Date().toISOString().split('T')[0];
+            currentFactPurItems = [{ name: 'Artículo Base', qty: 1, price: 0 }];
+            
+            renderFactPurchaseItems();
+            document.getElementById('fact-purchase-modal').classList.remove('hidden');
+        }
+
+        function addFactPurchaseItemRow() {
+            currentFactPurItems.push({ name: '', qty: 1, price: 0 });
+            renderFactPurchaseItems();
+        }
+
+        function renderFactPurchaseItems() {
+            const container = document.getElementById('fact-pur-items-container');
+            if (!container) return;
+            container.innerHTML = '';
+            let total = 0;
+
+            currentFactPurItems.forEach((item, index) => {
+                const subtotal = (item.price || 0) * (item.qty || 0);
+                total += subtotal;
+
+                container.innerHTML += `
+                    <div class="flex items-center gap-2 bg-slate-50 p-2 rounded-xl border">
+                        <input type="text" value="${item.name}" onchange="currentFactPurItems[${index}].name = this.value" placeholder="Nombre ítem" class="flex-1 px-2 py-1 border rounded text-xs">
+                        <input type="number" value="${item.qty}" onchange="currentFactPurItems[${index}].qty = parseFloat(this.value)||0; renderFactPurchaseItems();" placeholder="Cant" class="w-14 px-2 py-1 border rounded text-xs text-center">
+                        <input type="number" value="${item.price}" onchange="currentFactPurItems[${index}].price = parseFloat(this.value)||0; renderFactPurchaseItems();" placeholder="Precio" class="w-20 px-2 py-1 border rounded text-xs text-center">
+                        <span class="text-xs font-bold text-slate-700 w-20 text-right">${formatCOP(subtotal)}</span>
+                        <button onclick="currentFactPurItems.splice(${index}, 1); renderFactPurchaseItems();" class="text-rose-500 hover:text-rose-700 text-xs px-1"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                `;
+            });
+
+            document.getElementById('fact-pur-total-display').innerText = formatCOP(total);
+        }
+
+        function closeFactPurchaseModal() {
+            document.getElementById('fact-purchase-modal').classList.add('hidden');
+        }
+
+        function saveFactPurchase() {
+            const id = document.getElementById('fact-pur-id').value;
+            const invoiceNum = document.getElementById('fact-pur-num').value.trim();
+            const providerId = parseInt(document.getElementById('fact-pur-provider').value);
+            const factDate = document.getElementById('fact-pur-date').value;
+
+            if (!invoiceNum || !factDate) return alert('Por favor ingrese el número de factura y la fecha.');
+            if (currentFactPurItems.length === 0) return alert('Debe agregar al menos un artículo a la factura.');
+
+            const total = currentFactPurItems.reduce((sum, i) => sum + ((i.price || 0) * (i.qty || 0)), 0);
+
+            if (id) {
+                const inv = state.payables.find(p => p.id == id);
+                if (inv) {
+                    inv.invoiceNum = invoiceNum;
+                    inv.providerId = providerId;
+                    inv.factDate = factDate;
+                    inv.items = [...currentFactPurItems];
+                    const diff = total - inv.total;
+                    inv.total = total;
+                    inv.balance = Math.max(0, inv.balance + diff);
+                }
+            } else {
+                state.payables.push({
+                    id: Date.now(),
+                    invoiceNum,
+                    providerId,
+                    factDate,
+                    total,
+                    balance: total,
+                    items: [...currentFactPurItems],
+                    payments: [],
+                    date: new Date().toLocaleDateString()
+                });
+            }
+
+            saveData();
+            closeFactPurchaseModal();
+            renderFactPurchases();
+            renderPayables();
+            if (!document.getElementById('view-statistics').classList.contains('hidden')) {
+                renderStatistics();
+            }
+            alert('¡Factura de compra guardada e integrada con Cuentas por Pagar exitosamente!');
+        }
+
+        function editFactPurchase(id) {
+            const inv = state.payables.find(p => p.id === id);
+            if (!inv) return;
+
+            updateFactPurProvidersSelect();
+            document.getElementById('modal-fact-purchase-title').innerText = 'Editar Factura de Compra';
+            document.getElementById('fact-pur-id').value = inv.id;
+            document.getElementById('fact-pur-num').value = inv.invoiceNum;
+            document.getElementById('fact-pur-provider').value = inv.providerId;
+            document.getElementById('fact-pur-date').value = inv.factDate || new Date().toISOString().split('T')[0];
+
+            currentFactPurItems = inv.items && inv.items.length ? [...inv.items] : [{ name: 'Compra Global', qty: 1, price: inv.total }];
+            renderFactPurchaseItems();
+            document.getElementById('fact-purchase-modal').classList.remove('hidden');
+        }
+
+        function renderFactCreditSales() {
+            const tbody = document.getElementById('fact-credit-sale-table-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            const creditSales = state.sales.filter(s => s.method === 'Crédito');
+
+            if (creditSales.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400 text-sm">No hay facturas de ventas a crédito registradas.</td></tr>`;
+                return;
+            }
+
+            creditSales.forEach(s => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-3 font-semibold text-slate-800">FACT-CRED-${s.id.toString().slice(-4)}</td>
+                        <td class="p-3 font-medium text-slate-800">${s.clientName}</td>
+                        <td class="p-3 text-slate-500 text-xs">${s.date}</td>
+                        <td class="p-3 font-bold text-amber-600">${formatCOP(s.total)}</td>
+                        <td class="p-3 text-right">
+                            <button onclick="editFactCreditSale(${s.id})" class="text-blue-600 hover:text-blue-800 p-1 text-xs font-semibold"><i class="fa-solid fa-pen"></i> Editar</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        let currentFactSaleItems = [];
+
+        function updateFactSaleClientsSelect() {
+            const sel = document.getElementById('fact-sale-client');
+            if (!sel) return;
+            sel.innerHTML = '';
+            state.clients.forEach(c => {
+                sel.innerHTML += `<option value="${c.name}">${c.name}</option>`;
+            });
+        }
+
+        function openNewFactCreditSaleModal() {
+            if (state.clients.length === 0) return alert('Primero debe registrar clientes en el sistema.');
+            updateFactSaleClientsSelect();
+
+            document.getElementById('modal-fact-credit-sale-title').innerText = 'Nueva Venta a Crédito';
+            document.getElementById('fact-sale-id').value = '';
+            document.getElementById('fact-sale-date').value = new Date().toLocaleString();
+            currentFactSaleItems = [{ name: 'Artículo Crédito', qty: 1, price: 0 }];
+
+            renderFactCreditSaleItems();
+            document.getElementById('fact-credit-sale-modal').classList.remove('hidden');
+        }
+
+        function addFactCreditSaleItemRow() {
+            currentFactSaleItems.push({ name: '', qty: 1, price: 0 });
+            renderFactCreditSaleItems();
+        }
+
+        function renderFactCreditSaleItems() {
+            const container = document.getElementById('fact-sale-items-container');
+            if (!container) return;
+            container.innerHTML = '';
+            let total = 0;
+
+            currentFactSaleItems.forEach((item, index) => {
+                const subtotal = (item.price || 0) * (item.qty || 0);
+                total += subtotal;
+
+                container.innerHTML += `
+                    <div class="flex items-center gap-2 bg-slate-50 p-2 rounded-xl border">
+                        <input type="text" value="${item.name}" onchange="currentFactSaleItems[${index}].name = this.value" placeholder="Nombre ítem" class="flex-1 px-2 py-1 border rounded text-xs">
+                        <input type="number" value="${item.qty}" onchange="currentFactSaleItems[${index}].qty = parseFloat(this.value)||0; renderFactCreditSaleItems();" placeholder="Cant" class="w-14 px-2 py-1 border rounded text-xs text-center">
+                        <input type="number" value="${item.price}" onchange="currentFactSaleItems[${index}].price = parseFloat(this.value)||0; renderFactCreditSaleItems();" placeholder="Precio" class="w-20 px-2 py-1 border rounded text-xs text-center">
+                        <span class="text-xs font-bold text-slate-700 w-20 text-right">${formatCOP(subtotal)}</span>
+                        <button onclick="currentFactSaleItems.splice(${index}, 1); renderFactCreditSaleItems();" class="text-rose-500 hover:text-rose-700 text-xs px-1"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                `;
+            });
+
+            document.getElementById('fact-sale-total-display').innerText = formatCOP(total);
+        }
+
+        function closeFactCreditSaleModal() {
+            document.getElementById('fact-credit-sale-modal').classList.add('hidden');
+        }
+
+        function saveFactCreditSale() {
+            const id = document.getElementById('fact-sale-id').value;
+            const clientName = document.getElementById('fact-sale-client').value;
+
+            if (!clientName) return alert('Seleccione un cliente.');
+            if (currentFactSaleItems.length === 0) return alert('Agregue al menos un artículo.');
+
+            const total = currentFactSaleItems.reduce((sum, i) => sum + ((i.price || 0) * (i.qty || 0)), 0);
+
+            let clientObj = state.clients.find(c => c.name === clientName);
+
+            if (id) {
+                const sale = state.sales.find(s => s.id == id);
+                if (sale) {
+                    const diff = total - sale.total;
+                    sale.clientName = clientName;
+                    sale.items = [...currentFactSaleItems];
+                    sale.total = total;
+
+                    if (clientObj) {
+                        clientObj.debt = Math.max(0, parseFloat(clientObj.debt || 0) + diff);
+                    }
+                }
+            } else {
+                state.sales.push({
+                    id: Date.now(),
+                    timestamp: Date.now(),
+                    clientName,
+                    items: [...currentFactSaleItems],
+                    total,
+                    method: 'Crédito',
+                    account: 'N/A (Crédito)',
+                    date: new Date().toLocaleString()
+                });
+
+                if (clientObj) {
+                    clientObj.debt = parseFloat(clientObj.debt || 0) + total;
+                }
+            }
+
+            saveData();
+            closeFactCreditSaleModal();
+            renderFactCreditSales();
+            renderClients();
+            renderReports();
+            if (!document.getElementById('view-statistics').classList.contains('hidden')) {
+                renderStatistics();
+            }
+            alert('¡Factura de venta a crédito guardada con éxito!');
+        }
+
+        function editFactCreditSale(id) {
+            const sale = state.sales.find(s => s.id === id);
+            if (!sale) return;
+
+            updateFactSaleClientsSelect();
+            document.getElementById('modal-fact-credit-sale-title').innerText = 'Editar Venta a Crédito';
+            document.getElementById('fact-sale-id').value = sale.id;
+            document.getElementById('fact-sale-client').value = sale.clientName;
+            document.getElementById('fact-sale-date').value = sale.date;
+
+            currentFactSaleItems = sale.items && sale.items.length ? [...sale.items] : [{ name: 'Venta Global', qty: 1, price: sale.total }];
+            renderFactCreditSaleItems();
+            document.getElementById('fact-credit-sale-modal').classList.remove('hidden');
+        }
+
+        function renderAccounts() {
+            const grid = document.getElementById('accounts-cards-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            state.accounts.forEach(acc => {
+                grid.innerHTML += `
+                    <div class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start">
+                                <span class="text-xs font-semibold px-2.5 py-1 ${acc.type === 'Banco' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'} rounded-lg">${acc.type}</span>
+                                <div class="space-x-1">
+                                    <button onclick="editAccount(${acc.id})" class="text-slate-400 hover:text-blue-600 text-xs p-1"><i class="fa-solid fa-pen"></i></button>
+                                    <button onclick="deleteAccount(${acc.id})" class="text-slate-400 hover:text-rose-600 text-xs p-1"><i class="fa-solid fa-trash"></i></button>
+                                </div>
+                            </div>
+                            <h3 class="font-bold text-slate-800 text-base md:text-lg mt-3">${acc.name}</h3>
+                        </div>
+                        <div class="mt-4 md:mt-6 pt-3 md:pt-4 border-t border-slate-100 flex justify-between items-center">
+                            <span class="text-[10px] md:text-xs text-slate-400 uppercase font-semibold">Saldo Disponible</span>
+                            <span class="text-lg md:text-xl font-bold text-slate-900">${formatCOP(acc.balance)}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            updateAccountSelects();
+        }
+
+        function updateAccountSelects() {
+            const selects = [
+                document.getElementById('checkout-account'), 
+                document.getElementById('pay-account'),
+                document.getElementById('payable-pay-account')
+            ];
+            selects.forEach(sel => {
+                if (!sel) return;
+                sel.innerHTML = '';
+                state.accounts.forEach(acc => {
+                    sel.innerHTML += `<option value="${acc.id}">${acc.name} (${formatCOP(acc.balance)})</option>`;
+                });
+            });
+        }
+
+        function openAccountModal(id = null) {
+            document.getElementById('account-modal').classList.remove('hidden');
+            if (id) {
+                const acc = state.accounts.find(a => a.id === id);
+                document.getElementById('acc-id').value = acc.id;
+                document.getElementById('acc-name').value = acc.name;
+                document.getElementById('acc-type').value = acc.type;
+                document.getElementById('acc-balance').value = acc.balance;
+            } else {
+                document.getElementById('acc-id').value = '';
+                document.getElementById('acc-name').value = '';
+                document.getElementById('acc-type').value = 'Efectivo';
+                document.getElementById('acc-balance').value = '';
+            }
+        }
+
+        function closeAccountModal() {
+            document.getElementById('account-modal').classList.add('hidden');
+        }
+
+        function saveAccount() {
+            const id = document.getElementById('acc-id').value;
+            const name = document.getElementById('acc-name').value;
+            const type = document.getElementById('acc-type').value;
+            const balance = parseFloat(document.getElementById('acc-balance').value);
+
+            if (!name || isNaN(balance)) return alert('Complete los campos correctamente.');
+
+            if (id) {
+                const acc = state.accounts.find(a => a.id == id);
+                acc.name = name; acc.type = type; acc.balance = balance;
+            } else {
+                state.accounts.push({ id: Date.now(), name, type, balance });
+            }
+            saveData();
+            closeAccountModal();
+            renderAccounts();
+        }
+
+        function editAccount(id) { openAccountModal(id); }
+        function deleteAccount(id) {
+            if (state.accounts.length <= 1) return alert('Debe mantener al menos una cuenta activa.');
+            if (confirm('¿Eliminar esta cuenta?')) {
+                state.accounts = state.accounts.filter(a => a.id !== id);
+                saveData();
+                renderAccounts();
+            }
+        }
+
+        function renderPayables() {
+            const tbody = document.getElementById('payables-table-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            
+            if (state.payables.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400 text-sm">No hay facturas por pagar registradas.</td></tr>`;
+                return;
+            }
+
+            state.payables.forEach(inv => {
+                const provider = state.providers.find(p => p.id == inv.providerId);
+                const provName = provider ? provider.name : 'Proveedor Desconocido';
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-3 font-semibold text-slate-800">${inv.invoiceNum}</td>
+                        <td class="p-3 text-slate-700">${provName}</td>
+                        <td class="p-3 text-slate-500 text-xs">${inv.factDate || inv.date}</td>
+                        <td class="p-3 font-medium">${formatCOP(inv.total)}</td>
+                        <td class="p-3 font-bold ${inv.balance > 0 ? 'text-rose-600' : 'text-emerald-600'}">${formatCOP(inv.balance)}</td>
+                        <td class="p-3 text-right">
+                            <button onclick="openPayableHistoryModal(${inv.id})" class="bg-blue-50 hover:bg-blue-100 text-blue-700 px-2.5 py-1 rounded-lg text-xs font-semibold transition">
+                                Historial / Abonar
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function openProviderModal() {
+            document.getElementById('provider-modal').classList.remove('hidden');
+            renderProviderList();
+        }
+        function closeProviderModal() {
+            document.getElementById('provider-modal').classList.add('hidden');
+        }
+
+        function renderProviderList() {
+            const container = document.getElementById('provider-list-container');
+            if (!container) return;
+            container.innerHTML = '';
+            state.providers.forEach(p => {
+                container.innerHTML += `
+                    <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl text-xs md:text-sm">
+                        <div>
+                            <span class="font-semibold text-slate-800">${p.name}</span>
+                            <span class="block text-[10px] md:text-xs text-slate-500">${p.phone}</span>
+                        </div>
+                        <button onclick="deleteProvider(${p.id})" class="text-rose-500 hover:text-rose-700 p-1"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                `;
+            });
+        }
+
+        function saveProvider() {
+            const name = document.getElementById('prov-name').value;
+            const phone = document.getElementById('prov-phone').value;
+            if (!name) return alert('Ingrese el nombre del proveedor.');
+            state.providers.push({ id: Date.now(), name, phone: phone || 'N/A' });
+            document.getElementById('prov-name').value = '';
+            document.getElementById('prov-phone').value = '';
+            saveData();
+            renderProviderList();
+        }
+
+        function deleteProvider(id) {
+            if (confirm('¿Eliminar proveedor?')) {
+                state.providers = state.providers.filter(p => p.id !== id);
+                saveData();
+                renderProviderList();
+            }
+        }
+
+        function openPayableHistoryModal(invId) {
+            const inv = state.payables.find(p => p.id === invId);
+            if (!inv) return;
+
+            document.getElementById('payable-inv-id').value = inv.id;
+            document.getElementById('payable-modal-title').innerText = `Factura #${inv.invoiceNum}`;
+            document.getElementById('payable-modal-total').innerText = formatCOP(inv.total);
+            document.getElementById('payable-modal-balance').innerText = formatCOP(inv.balance);
+
+            const statusEl = document.getElementById('payable-modal-status');
+            if (inv.balance <= 0) {
+                statusEl.innerText = 'PAGADA';
+                statusEl.className = 'px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800';
+                document.getElementById('payable-payment-form').classList.add('hidden');
+            } else {
+                statusEl.innerText = 'PENDIENTE';
+                statusEl.className = 'px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800';
+                document.getElementById('payable-payment-form').classList.remove('hidden');
+            }
+
+            const listEl = document.getElementById('payable-payments-list');
+            listEl.innerHTML = '';
+            if (!inv.payments || inv.payments.length === 0) {
+                listEl.innerHTML = `<div class="p-3 text-center text-slate-400">No hay abonos registrados para esta factura.</div>`;
+            } else {
+                [...inv.payments].reverse().forEach(pm => {
+                    listEl.innerHTML += `
+                        <div class="p-2.5 flex justify-between items-center bg-slate-50">
+                            <div>
+                                <span class="font-bold text-slate-800">${formatCOP(pm.amount)}</span>
+                                <span class="block text-[10px] text-slate-400">${pm.date} | Cuenta: ${pm.accountName}</span>
+                            </div>
+                            <span class="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold">Abono</span>
+                        </div>
+                    `;
+                });
+            }
+
+            updateAccountSelects();
+            document.getElementById('payable-history-modal').classList.remove('hidden');
+        }
+
+        function closePayableHistoryModal() {
+            document.getElementById('payable-history-modal').classList.add('hidden');
+        }
+
+        function submitPayablePayment() {
+            if (!state.cashRegister.isOpen) return alert('¡No se puede abonar a cuentas por pagar si la caja está cerrada! Debe abrir caja primero.');
+
+            const invId = parseInt(document.getElementById('payable-inv-id').value);
+            const inv = state.payables.find(p => p.id === invId);
+            if (!inv) return;
+
+            const amount = parseFloat(document.getElementById('payable-pay-amount').value);
+            const accountId = parseInt(document.getElementById('payable-pay-account').value);
+
+            if (isNaN(amount) || amount <= 0) return alert('Ingrese un monto de abono válido.');
+            if (amount > inv.balance) return alert('El monto no puede superar el saldo pendiente de la factura.');
+
+            const account = state.accounts.find(a => a.id === accountId);
+            if (!account) return alert('Seleccione una cuenta válida.');
+            if (account.balance < amount) return alert('Saldo insuficiente en la cuenta seleccionada.');
+
+            account.balance -= amount;
+            inv.balance -= amount;
+            if (!inv.payments) inv.payments = [];
+            inv.payments.push({
+                id: Date.now(),
+                date: new Date().toLocaleString(),
+                amount,
+                accountName: account.name
+            });
+
+            saveData();
+            document.getElementById('payable-pay-amount').value = '';
+            openPayableHistoryModal(invId);
+            renderPayables();
+            renderAccounts();
+            renderReports();
+            if (!document.getElementById('view-statistics').classList.contains('hidden')) {
+                renderStatistics();
+            }
+            alert('¡Abono a proveedor procesado con éxito!');
+        }
+
+        // --- CLIENTES & CRÉDITO ---
+        function renderClients() {
+            const tbody = document.getElementById('clients-table-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            if (state.clients.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-400 text-sm">No hay clientes registrados en cartera.</td></tr>`;
+                return;
+            }
+
+            state.clients.forEach(c => {
+                const debtVal = parseFloat(c.debt || 0);
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-3 md:p-4 font-semibold text-slate-800">${c.name}</td>
+                        <td class="p-3 md:p-4 text-slate-600">${c.phone || 'N/A'}</td>
+                        <td class="p-3 md:p-4 font-bold ${debtVal > 0 ? 'text-rose-600' : 'text-emerald-600'}">${formatCOP(debtVal)}</td>
+                        <td class="p-3 md:p-4 text-right space-x-1">
+                            <button onclick="openClientHistoryModal(${c.id})" class="bg-blue-50 hover:bg-blue-100 text-blue-700 px-2.5 py-1 rounded-xl text-xs font-semibold transition" title="Ver Historial de Abonos">
+                                <i class="fa-solid fa-clock-rotate-left mr-1"></i> Historial
+                            </button>
+                            ${debtVal > 0 ? `<button onclick="openPaymentModal(${c.id})" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 rounded-xl text-xs font-bold transition shadow-sm"><i class="fa-solid fa-hand-holding-dollar mr-1"></i> Abonar</button>` : ''}
+                            <button onclick="editClient(${c.id})" class="text-blue-600 hover:text-blue-800 p-1"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteClient(${c.id})" class="text-rose-600 hover:text-rose-800 p-1"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+            updateClientsDatalist();
+        }
+
+        // NUEVAS FUNCIONES DE HISTORIAL DE ABONOS DE CLIENTES
+        function openClientHistoryModal(cliId) {
+            const client = state.clients.find(c => c.id === cliId);
+            if (!client) return;
+
+            document.getElementById('client-history-name').innerText = `Historial: ${client.name}`;
+            document.getElementById('client-history-debt').innerText = `Deuda: ${formatCOP(client.debt)}`;
+
+            const listContainer = document.getElementById('client-history-list');
+            listContainer.innerHTML = '';
+
+            const history = client.paymentsHistory || [];
+
+            if (history.length === 0) {
+                listContainer.innerHTML = `<div class="p-4 text-center text-slate-400">No se han registrado abonos previos para este cliente.</div>`;
+            } else {
+                [...history].reverse().forEach(pm => {
+                    listContainer.innerHTML += `
+                        <div class="p-3 flex justify-between items-center bg-slate-50 hover:bg-slate-100 transition">
+                            <div>
+                                <span class="font-bold text-slate-800 text-sm">${formatCOP(pm.amount)}</span>
+                                <span class="block text-[11px] text-slate-500">${pm.date} | Cuenta Receptora: ${pm.accountName}</span>
+                            </div>
+                            <span class="text-[10px] bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full font-bold">Abono Recibido</span>
+                        </div>
+                    `;
+                });
+            }
+
+            document.getElementById('client-history-modal').classList.remove('hidden');
+        }
+
+        function closeClientHistoryModal() {
+            document.getElementById('client-history-modal').classList.add('hidden');
+        }
+
+        function openClientModal(id = null) {
+            document.getElementById('client-modal').classList.remove('hidden');
+            if (id) {
+                const c = state.clients.find(cli => cli.id === id);
+                document.getElementById('modal-client-title').innerText = 'Editar Cliente';
+                document.getElementById('cli-id').value = c.id;
+                document.getElementById('cli-name').value = c.name;
+                document.getElementById('cli-phone').value = c.phone || '';
+                document.getElementById('cli-debt').value = c.debt || 0;
+            } else {
+                document.getElementById('modal-client-title').innerText = 'Registrar Cliente';
+                document.getElementById('cli-id').value = '';
+                document.getElementById('cli-name').value = '';
+                document.getElementById('cli-phone').value = '';
+                document.getElementById('cli-debt').value = '0';
+            }
+        }
+
+        function closeClientModal() {
+            document.getElementById('client-modal').classList.add('hidden');
+        }
+
+        function saveClient() {
+            const id = document.getElementById('cli-id').value;
+            const name = document.getElementById('cli-name').value.trim();
+            const phone = document.getElementById('cli-phone').value.trim();
+            const debt = parseFloat(document.getElementById('cli-debt').value) || 0;
+
+            if (!name) return alert('Ingrese el nombre del cliente.');
+
+            if (id) {
+                const c = state.clients.find(cli => cli.id == id);
+                c.name = name; c.phone = phone || 'N/A'; c.debt = debt;
+            } else {
+                state.clients.push({ id: Date.now(), name, phone: phone || 'N/A', debt, paymentsHistory: [] });
+            }
+            saveData();
+            closeClientModal();
+            renderClients();
+            if (!document.getElementById('view-statistics').classList.contains('hidden')) {
+                renderStatistics();
+            }
+        }
+
+        function editClient(id) { openClientModal(id); }
+        function deleteClient(id) {
+            if (confirm('¿Eliminar cliente de la cartera?')) {
+                state.clients = state.clients.filter(c => c.id !== id);
+                saveData();
+                renderClients();
+                if (!document.getElementById('view-statistics').classList.contains('hidden')) {
+                    renderStatistics();
+                }
+            }
+        }
+
+        function openPaymentModal(cliId) {
+            const client = state.clients.find(c => c.id === cliId);
+            if (!client) return;
+
+            document.getElementById('pay-cli-id').value = client.id;
+            document.getElementById('pay-cli-name').innerText = client.name;
+            document.getElementById('pay-cli-debt').innerText = formatCOP(client.debt);
+            document.getElementById('pay-amount').value = '';
+            
+            updateAccountSelects();
+            document.getElementById('payment-modal').classList.remove('hidden');
+        }
+
+        function closePaymentModal() {
+            document.getElementById('payment-modal').classList.add('hidden');
+        }
+
+        function submitClientPayment() {
+            if (!state.cashRegister.isOpen) return alert('¡No se pueden registrar abonos si la caja está cerrada! Abra caja primero.');
+
+            const cliId = parseInt(document.getElementById('pay-cli-id').value);
+            const client = state.clients.find(c => c.id === cliId);
+            if (!client) return;
+
+            const amount = parseFloat(document.getElementById('pay-amount').value);
+            const accountId = parseInt(document.getElementById('pay-account').value);
+
+            if (isNaN(amount) || amount <= 0) return alert('Ingrese un monto válido a abonar.');
+            if (amount > client.debt) return alert('El abono no puede superar la deuda total del cliente.');
+
+            const account = state.accounts.find(a => a.id === accountId);
+            if (!account) return alert('Seleccione una cuenta válida.');
+
+            account.balance += amount;
+            client.debt -= amount;
+
+            // REGISTRO EN HISTORIAL INDIVIDUAL DEL CLIENTE
+            if (!client.paymentsHistory) client.paymentsHistory = [];
+            client.paymentsHistory.push({
+                id: Date.now(),
+                date: new Date().toLocaleString(),
+                amount,
+                accountName: account.name
+            });
+
+            // REGISTRO GENERAL EN VENTAS / TRANSACCIONES
+            state.sales.push({
+                id: Date.now(),
+                timestamp: Date.now(),
+                clientName: client.name,
+                items: [{ name: 'Abono de Cartera', qty: 1, price: amount }],
+                total: amount,
+                method: 'Abono Crédito',
+                account: account.name,
+                date: new Date().toLocaleString()
+            });
+
+            saveData();
+            closePaymentModal();
+            renderClients();
+            renderAccounts();
+            renderReports();
+            if (!document.getElementById('view-statistics').classList.contains('hidden')) {
+                renderStatistics();
+            }
+            alert(`¡Abono de ${formatCOP(amount)} procesado correctamente! Deuda actual de ${client.name}: ${formatCOP(client.debt)}`);
+        }
+
+        // --- ESTADÍSTICAS Y GRÁFICOS PROFESIONALES (SINCRONIZACIÓN Y DISEÑO MEJORADO) ---
+        function renderStatistics() {
+            // 1. TARJETAS SUPERIORES
+            const cajaGenAccount = state.accounts.find(a => a.name.toLowerCase().includes('caja general') || a.type === 'Efectivo');
+            const totalCashBalance = cajaGenAccount ? cajaGenAccount.balance : 0;
+
+            const totalBanksBalance = state.accounts
+                .filter(a => a.type === 'Banco' && !a.name.toLowerCase().includes('cuenta proveedor') && !a.name.toLowerCase().includes('proveedor'))
+                .reduce((sum, a) => sum + a.balance, 0);
+
+            const totalCartera = state.clients.reduce((sum, c) => sum + (parseFloat(c.debt) || 0), 0);
+            const totalExpenses = state.payables.reduce((sum, p) => sum + p.balance, 0);
+
+            const totalIncomeAll = state.sales.reduce((sum, s) => sum + s.total, 0);
+            const netBalance = totalIncomeAll - totalExpenses;
+
+            let totalTrans = 0;
+            if (state.cashRegister.isOpen && state.cashRegister.startTimeStamp) {
+                totalTrans = state.sales.filter(s => (s.timestamp || 0) >= state.cashRegister.startTimeStamp).length;
+            }
+
+            document.getElementById('stat-total-cash-income').innerText = formatCOP(totalCashBalance);
+            document.getElementById('stat-total-banks').innerText = formatCOP(totalBanksBalance);
+            document.getElementById('stat-total-expenses').innerText = formatCOP(totalExpenses);
+            document.getElementById('stat-total-cartera').innerText = formatCOP(totalCartera);
+            document.getElementById('stat-net-balance').innerText = formatCOP(netBalance);
+            document.getElementById('stat-total-trans').innerText = totalTrans;
+
+            // PALETA DE COLORES PROFESIONALES PARA GRÁFICOS
+            const baseColors = [
+                '#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', 
+                '#06b6d4', '#6366f1', '#f97316', '#14b8a6', '#84cc16'
+            ];
+
+            // 1. GRÁFICO FLUJO FINANCIERO (BARRAS)
+            const ctx1 = document.getElementById('chartFinancial')?.getContext('2d');
+            if (ctx1) {
+                if (chartFinancialInstance) chartFinancialInstance.destroy();
+                chartFinancialInstance = new Chart(ctx1, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Caja Efec.', 'Bancos Total', 'Gastos Pend.', 'Balance Neto'],
+                        datasets: [{
+                            label: 'Monto ($)',
+                            data: [totalCashBalance, totalBanksBalance, totalExpenses, netBalance],
+                            backgroundColor: ['#10b981', '#3b82f6', '#f43f5e', '#14b8a6'],
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return ' Total: ' + formatCOP(context.raw);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 2. GRÁFICO MÉTODOS DE PAGO (DONA SINCRONIZADA CON LA BD)
+            const methodsMap = {};
+            state.sales.forEach(s => {
+                const methodKey = s.method || 'Otros';
+                methodsMap[methodKey] = (methodsMap[methodKey] || 0) + s.total;
+            });
+
+            const methodLabels = Object.keys(methodsMap);
+            const methodData = Object.values(methodsMap);
+
+            const ctx2 = document.getElementById('chartPaymentMethods')?.getContext('2d');
+            if (ctx2) {
+                if (chartPaymentMethodsInstance) chartPaymentMethodsInstance.destroy();
+                chartPaymentMethodsInstance = new Chart(ctx2, {
+                    type: 'doughnut',
+                    data: {
+                        labels: methodLabels.length > 0 ? methodLabels : ['Sin Ventas'],
+                        datasets: [{
+                            data: methodData.length > 0 ? methodData : [1],
+                            backgroundColor: methodLabels.length > 0 ? baseColors.slice(0, methodLabels.length) : ['#cbd5e1'],
+                            borderWidth: 2,
+                            borderColor: '#ffffff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { font: { size: 11, weight: '600' }, usePointStyle: true, padding: 15 }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        if (methodLabels.length === 0) return ' Sin registros de venta';
+                                        return ` ${context.label}: ${formatCOP(context.raw)}`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 3. GRÁFICO VENTAS POR CATEGORÍA (BARRAS SINCRONIZADAS CON LA BD)
+            const catMap = {};
+            state.sales.forEach(s => {
+                if (s.items && Array.isArray(s.items)) {
+                    s.items.forEach(item => {
+                        const prod = state.products.find(p => p.id === item.id || p.name.toLowerCase() === (item.name || '').toLowerCase());
+                        const categoryName = prod && prod.category ? prod.category : 'General';
+                        const itemSubtotal = (item.price || 0) * (item.qty || 1);
+                        catMap[categoryName] = (catMap[categoryName] || 0) + itemSubtotal;
+                    });
+                }
+            });
+
+            const catLabels = Object.keys(catMap);
+            const catData = Object.values(catMap);
+
+            const ctx3 = document.getElementById('chartCategories')?.getContext('2d');
+            if (ctx3) {
+                if (chartCategoriesInstance) chartCategoriesInstance.destroy();
+                chartCategoriesInstance = new Chart(ctx3, {
+                    type: 'bar',
+                    data: {
+                        labels: catLabels.length > 0 ? catLabels : ['Sin Registros'],
+                        datasets: [{
+                            label: 'Total Ventas ($)',
+                            data: catData.length > 0 ? catData : [0],
+                            backgroundColor: catLabels.length > 0 ? baseColors.slice(2, 2 + catLabels.length) : ['#cbd5e1'],
+                            borderRadius: 8,
+                            maxBarThickness: 45
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        if (catLabels.length === 0) return ' Sin registros';
+                                        return ' Total Vendido: ' + formatCOP(context.raw);
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return formatCOP(value);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        function downloadAndSendDailyReport() {
+            const todayStr = new Date().toLocaleDateString();
+            const todaySales = state.sales.filter(s => new Date(s.timestamp || Date.now()).toLocaleDateString() === todayStr);
+            const totalIncomeToday = todaySales.reduce((sum, s) => sum + s.total, 0);
+
+            let doc = `===================================\n`;
+            doc += `   REPORTE DIARIO DE OPERACIONES   \n`;
+            doc += `===================================\n`;
+            doc += `Fecha: ${todayStr}\n`;
+            doc += `Ventas Registradas Hoy: ${todaySales.length}\n`;
+            doc += `Ingreso Total del Día: ${formatCOP(totalIncomeToday)}\n`;
+            doc += `-----------------------------------\n\n`;
+            
+            doc += `DETALLE DE TRANSACCIONES:\n`;
+            todaySales.forEach((s, i) => {
+                doc += `${i+1}. [${s.date}] ${s.clientName} - ${s.method}: ${formatCOP(s.total)}\n`;
+            });
+
+            doc += `\n===================================\n`;
+            doc += `Generado por POS Master v2.2\n`;
+
+            const blob = new Blob([doc], { type: 'text/plain;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Reporte_Diario_${todayStr.replace(/\//g, '-')}.txt`;
+            link.click();
+
+            const encodedMsg = encodeURIComponent(doc);
+            window.open(`https://api.whatsapp.com/send?text=${encodedMsg}`, '_blank');
+        }
+
+        // --- REPORTES ---
+        function renderReports() {
+            const totalSales = state.sales.reduce((sum, s) => sum + s.total, 0);
+            document.getElementById('rep-total-sales').innerText = formatCOP(totalSales);
+            document.getElementById('rep-total-trans').innerText = state.sales.length;
+            document.getElementById('rep-total-products').innerText = state.products.length;
+
+            const tbody = document.getElementById('reports-sales-table-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            if (state.sales.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400 text-sm">No hay transacciones de venta registradas.</td></tr>`;
+                return;
+            }
+
+            [...state.sales].reverse().forEach(s => {
+                const itemsSummary = s.items.map(i => `${i.qty}x ${i.name}`).join(', ');
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-3 text-slate-500 text-xs">${s.date}</td>
+                        <td class="p-3 font-semibold text-slate-800">${s.clientName || 'Cliente Ocasional'}</td>
+                        <td class="p-3"><span class="px-2 py-0.5 rounded text-[11px] font-bold ${s.method === 'Efectivo' ? 'bg-emerald-100 text-emerald-800' : s.method === 'Transferencia' ? 'bg-blue-100 text-blue-800' : 'bg-amber-100 text-amber-800'}">${s.method}</span> <span class="text-xs text-slate-400 block">${s.account}</span></td>
+                        <td class="p-3 text-slate-600 text-xs line-clamp-1" title="${itemsSummary}">${itemsSummary}</td>
+                        <td class="p-3 font-bold text-slate-900 text-right">${formatCOP(s.total)}</td>
+                    </tr>
+                `;
+            });
+        }
+    </script>
+</body>
+</html>
