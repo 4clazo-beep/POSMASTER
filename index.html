@@ -2911,7 +2911,7 @@ function renderCashControl() {
 }
 
         // --- CLIENTES & CARTERA ---
-        function renderClients() {
+      function renderClients() {
             const tbody = document.getElementById('clients-table-body');
             if (!tbody) return;
             tbody.innerHTML = '';
@@ -2929,13 +2929,50 @@ function renderCashControl() {
                         <td class="p-3 md:p-4 text-slate-500">${c.phone || 'Sin Teléfono'}</td>
                         <td class="p-3 md:p-4 font-bold ${debt > 0 ? 'text-rose-600' : 'text-emerald-600'}">${formatCOP(debt)}</td>
                         <td class="p-3 md:p-4 text-right space-x-1">
-                            ${debt > 0 ? `<button onclick="openPaymentModal(${c.id})" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs"><i class="fa-solid fa-hand-holding-dollar mr-1"></i> Abonar</button>` : ''}
+                            <button onclick="sendClientDebtWhatsApp(${c.id})" class="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-lg font-bold text-xs transition" title="Enviar Estado de Cuenta por WhatsApp">
+                                <i class="fa-brands fa-whatsapp text-sm"></i> WhatsApp
+                            </button>
+                            ${debt > 0 ? `<button onclick="openPaymentModal(${c.id})" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs transition"><i class="fa-solid fa-hand-holding-dollar mr-1"></i> Abonar</button>` : ''}
                             <button onclick="openClientModal(${c.id})" class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-xs"><i class="fa-solid fa-pen"></i></button>
                             <button onclick="deleteClient(${c.id})" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-xs"><i class="fa-solid fa-trash"></i></button>
                         </td>
                     </tr>
                 `;
             });
+        }
+        function sendClientDebtWhatsApp(clientId) {
+            const client = state.clients.find(c => c.id === clientId);
+            if (!client) return alert('Cliente no encontrado.');
+
+            const debt = client.debt || 0;
+            const today = new Date().toLocaleDateString();
+
+            let msg = `=====================================\n`;
+            msg += `          *ESTADO DE CUENTA*\n`;
+            msg += `=====================================\n\n`;
+            msg += `👋 Hola estimado(a) *${client.name}*,\n\n`;
+            msg += `Te saludamos de la administración. Queremos compartir contigo el resumen de tu saldo pendiente a la fecha:\n\n`;
+            msg += `📅 *Fecha de Corte:* ${today}\n`;
+            msg += `💰 *Deuda Acumulada Total:* *${formatCOP(debt)}*\n\n`;
+
+            if (debt > 0) {
+                msg += `📌 Te recordamos que puedes realizar tus abonos o poner al día tu crédito comunicándote con nosotros o acercándote a nuestras instalaciones.\n\n`;
+            } else {
+                msg += `🎉 ¡Te encuentras a paz y salvo con tu cuenta! Gracias por tu puntualidad.\n\n`;
+            }
+
+            msg += `=====================================\n`;
+            msg += `_¡Gracias por preferirnos!_\n`;
+
+            // Limpiar formato del teléfono (remover espacios, guiones, etc.) si existe
+            let phone = client.phone ? client.phone.replace(/\D/g, '') : '';
+            
+            const encoded = encodeURIComponent(msg);
+            
+            // Si el cliente tiene un número válido registrado, se envía directamente a su chat; si no, abre WhatsApp genérico
+            const url = phone.length >= 7 ? `https://api.whatsapp.com/send?phone=${phone}&text=${encoded}` : `https://api.whatsapp.com/send?text=${encoded}`;
+            
+            window.open(url, '_blank');
         }
 
         function openClientModal(id = null) {
@@ -3012,8 +3049,7 @@ function renderCashControl() {
         function closePaymentModal() {
             document.getElementById('payment-modal').classList.add('hidden');
         }
-
-    function submitClientPayment() {
+function submitClientPayment() {
     if (!state.cashRegister.isOpen) return alert('La caja está cerrada. No se pueden realizar modificaciones.');
     const clientId = parseInt(document.getElementById('pay-cli-id').value);
     const amount = parseFloat(document.getElementById('pay-amount').value);
@@ -3026,6 +3062,9 @@ function renderCashControl() {
 
     if (!client || !account) return alert('Cliente o cuenta inválida.');
     if (amount > client.debt) return alert('El abono no puede superar la deuda actual del cliente.');
+
+    // Guardar saldo anterior para el comprobante
+    const previousDebt = client.debt;
 
     // 1. Descontar deuda del cliente y sumar al saldo de la cuenta
     client.debt -= amount;
@@ -3071,9 +3110,44 @@ function renderCashControl() {
     saveData();
     closePaymentModal();
     refreshAllUI();
-    alert(`¡Abono registrado con éxito por ${formatCOP(amount)}! Se ha actualizado la facturación y los reportes.`);
+
+    // 4. Preguntar si se desea enviar el comprobante de abono por WhatsApp
+    if (confirm(`¡Abono registrado con éxito por ${formatCOP(amount)}!\n\n¿Deseas enviar el comprobante de pago por WhatsApp al cliente?`)) {
+        sendPaymentReceiptWhatsApp(client, amount, previousDebt, client.debt, account.name);
+    }
 }
 
+// FUNCIÓN AUXILIAR PARA ARMAR Y ENVIAR EL COMPROBANTE POR WHATSAPP
+function sendPaymentReceiptWhatsApp(client, amountPaid, previousDebt, remainingDebt, accountName) {
+    const today = new Date().toLocaleString();
+
+    let msg = `=====================================\n`;
+    msg += `       *COMPROBANTE DE ABONO*\n`;
+    msg += `=====================================\n\n`;
+    msg += `👋 Hola *${client.name}*,\n\n`;
+    msg += `Hemos registrado exitosamente tu abono a cuenta. Aquí tienes el detalle del movimiento:\n\n`;
+    msg += `📅 *Fecha / Hora:* ${today}\n`;
+    msg += `💵 *Monto Abonado:* *${formatCOP(amountPaid)}*\n`;
+    msg += `💳 *Método / Cuenta:* ${accountName}\n\n`;
+    msg += `--- *RESUMEN DE SALDO* ---\n`;
+    msg += `🔴 Saldo Anterior: ${formatCOP(previousDebt)}\n`;
+    msg += `🟢 Saldo Actual Pendiente: *${formatCOP(remainingDebt)}*\n\n`;
+
+    if (remainingDebt <= 0) {
+        msg += `🎉 ¡Felicidades! Tu cuenta se encuentra completamente a PAZ Y SALVO.\n\n`;
+    } else {
+        msg += `📌 ¡Muchas gracias por tu abono y puntualidad!\n\n`;
+    }
+
+    msg += `=====================================\n`;
+    msg += `_Comprobante emitido por POS Master_`;
+
+    let phone = client.phone ? client.phone.replace(/\D/g, '') : '';
+    const encoded = encodeURIComponent(msg);
+    const url = phone.length >= 7 ? `https://api.whatsapp.com/send?phone=${phone}&text=${encoded}` : `https://api.whatsapp.com/send?text=${encoded}`;
+
+    window.open(url, '_blank');
+}
       // Variables globales para almacenar las instancias de Chart.js y evitar duplicados
 let chartFinancialInstance = null;
 let chartPaymentMethodsInstance = null;
