@@ -1993,10 +1993,14 @@ function renderCart() {
                     <span class="text-xs font-bold text-slate-700">${formatCOP(item.price * item.qty)}</span>
                 </div>
                 <div class="flex justify-between items-center">
-                    <div class="flex items-center gap-1">
-                        <span class="text-[10px] text-slate-400 font-bold">$</span>
-                        <input type="number" value="${item.price}" onchange="updateCartItemPrice(${item.id}, this.value)" class="w-16 px-1.5 py-0.5 text-xs border rounded bg-white font-semibold text-slate-700">
-                    </div>
+                   <div class="flex items-center gap-1">
+    <span class="text-[10px] text-slate-400 font-bold">$</span>
+    <input type="number" 
+           value="${item.price}" 
+           oninput="updateCartItemPriceQuick(${item.id}, this.value)" 
+           onblur="updateCartItemPrice(${item.id}, this.value)" 
+           class="w-16 px-1.5 py-0.5 text-xs border rounded bg-white font-semibold text-slate-700 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+</div>
                     <div class="flex items-center gap-2">
                         <button onclick="updateQty(${item.id}, -1)" class="w-6 h-6 bg-slate-200 hover:bg-slate-300 rounded-lg flex items-center justify-center text-xs font-bold">-</button>
                         <span class="text-xs font-bold w-4 text-center">${item.qty}</span>
@@ -2012,6 +2016,35 @@ function renderCart() {
     document.getElementById('cart-total').innerText = formatCOP(subtotal);
 
     state.cart = activeCart.items;
+}
+// Actualiza el precio de forma fluida mientras el usuario escribe o hace clic fuera
+function updateCartItemPriceQuick(id, newPrice) {
+    const activeCart = getActiveCart();
+    const item = activeCart.items.find(i => i.id === id);
+    if (item) {
+        const parsedPrice = parseFloat(newPrice);
+        item.price = isNaN(parsedPrice) ? 0 : parsedPrice;
+        
+        // Recalcular subtotal y total inmediatamente sin perder el foco del input
+        let subtotal = activeCart.items.reduce((sum, i) => sum + (i.price * i.qty), 0);
+        
+        const subtotalEl = document.getElementById('cart-subtotal');
+        const totalEl = document.getElementById('cart-total');
+        
+        if (subtotalEl) subtotalEl.innerText = formatCOP(subtotal);
+        if (totalEl) totalEl.innerText = formatCOP(subtotal);
+    }
+}
+
+// Guarda el precio definitivo al hacer clic fuera (blur) o cambiar de campo
+function updateCartItemPrice(id, newPrice) {
+    const activeCart = getActiveCart();
+    const item = activeCart.items.find(i => i.id === id);
+    if (item) {
+        const parsedPrice = parseFloat(newPrice);
+        item.price = isNaN(parsedPrice) ? 0 : parsedPrice;
+        renderCart(); // Re-renderiza para asegurar consistencia en la interfaz
+    }
 }
 
 function updateQty(id, change) {
