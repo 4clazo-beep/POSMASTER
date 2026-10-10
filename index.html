@@ -496,11 +496,13 @@
                         </label>
                     </div>
 
-                    <div class="hidden md:flex items-center gap-3">
-                        <span id="cash-status-badge-desktop" class="px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-semibold">Caja Cerrada</span>
-                        <span class="text-sm text-slate-600"><i class="fa-regular fa-calendar-days mr-2"></i><span id="current-date"></span></span>
-                    </div>
-                </div>
+                   <div class="hidden md:flex items-center gap-4">
+    <span class="text-sm text-slate-600"><i class="fa-regular fa-calendar-days mr-2"></i><span id="current-date"></span></span>
+    <span class="text-sm text-slate-600 font-medium bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-xl flex items-center gap-1.5 border border-slate-200 dark:border-slate-700">
+        <i class="fa-regular fa-clock text-emerald-500"></i>
+        <span id="current-time" class="font-bold text-slate-700 dark:text-slate-200">00:00:00</span>
+    </span>
+</div>
             </header>
 
             <!-- TARJETA INFORMATIVA / GUÍA DEL MÓDULO ACTIVO -->
@@ -560,7 +562,7 @@
                         <div id="pos-product-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 md:gap-4 overflow-y-auto flex-1 p-0.5 max-h-[380px] lg:max-h-none"></div>
                     </div>
 
-                    <div class="bg-white rounded-2xl shadow-sm p-3 md:p-4 flex flex-col h-full border border-slate-100">
+                  <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-2xl shadow-sm p-3 md:p-4 flex flex-col h-full border border-white/20 dark:border-slate-800">
                        <h2 class="text-md md:text-lg font-bold text-slate-800 mb-2 border-b pb-2 flex justify-between items-center">
     <span>Carritos de Compra</span>
     <button onclick="clearCart()" class="text-rose-500 text-xs font-normal hover:underline">Vaciar Activo</button>
@@ -1412,7 +1414,11 @@ function checkLicenseOnLoad() {
         return;
     }
 
-    if (now > expiryDate) {
+    // Calcular fecha límite permitiendo un día adicional de gracia después del vencimiento
+    let blockDate = new Date(expiryDate);
+    blockDate.setDate(blockDate.getDate() + 1);
+
+    if (now > blockDate) {
         showLicenseScreen('⚠️ Tu licencia ha expirado. Por favor renuévala con el administrador.');
         return;
     }
@@ -1424,15 +1430,12 @@ function checkLicenseOnLoad() {
     
     const expFormatted = expiryDate.toLocaleDateString();
     
-    // Actualizar en la versión de escritorio (Sidebar)
     const deskExpiry = document.getElementById('license-expiry-display');
     if (deskExpiry) deskExpiry.innerText = `Licencia activa hasta: ${expFormatted}`;
     
-    // Actualizar en el menú móvil
     const mobExpiry = document.getElementById('license-expiry-display-mob');
     if (mobExpiry) mobExpiry.innerText = `Licencia activa hasta: ${expFormatted}`;
 
-    // CONTROL DEL MENSAJE DE VENCIMIENTO (FALTAN 7 DÍAS O MENOS)
     const diffTime = expiryDate - now;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
@@ -1459,7 +1462,6 @@ function checkLicenseOnLoad() {
         }
     }
 }
-
         function showLicenseScreen(errorMsg = '') {
             document.getElementById('license-screen').classList.remove('hidden');
             document.getElementById('app-container').classList.add('hidden');
@@ -1507,6 +1509,7 @@ function checkLicenseOnLoad() {
             checkLicenseOnLoad();
             refreshAllUI();
             updateModuleInfoBanner('pos');
+            updateLiveClock();
         });
 
         // --- BASE DE DATOS Y ESTADO GLOBAL ---
@@ -3881,6 +3884,19 @@ function saveEditedBillingInvoice() {
     refreshAllUI();
     alert('Factura y artículos actualizados con éxito.');
 }
+// --- RELOJ EN TIEMPO REAL ---
+function updateLiveClock() {
+    const now = new Date();
+    // Formato de hora local (puedes ajustar a 12h o 24h según prefieras)
+    const timeString = now.toLocaleTimeString('es-CO', { hour12: false });
+    const timeEl = document.getElementById('current-time');
+    if (timeEl) {
+        timeEl.innerText = timeString;
+    }
+}
+
+// Iniciar el reloj al cargar la página y actualizar cada segundo
+setInterval(updateLiveClock, 1000);
  </script>
 <!-- TICKET TÉRMICO OCULTO PARA IMPRESIÓN 80MM -->
 <div id="thermal-ticket" class="hidden">
