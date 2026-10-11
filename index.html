@@ -2878,7 +2878,7 @@ function renderCashControl() {
             document.getElementById('payable-history-modal').classList.add('hidden');
         }
 
-      function submitPayablePayment() {
+    function submitPayablePayment() {
     if (!state.cashRegister.isOpen) return alert('La caja está cerrada. No se pueden realizar modificaciones.');
     const invId = parseInt(document.getElementById('payable-inv-id').value);
     const amount = parseFloat(document.getElementById('payable-pay-amount').value);
@@ -2893,6 +2893,9 @@ function renderCashControl() {
     if (amount > account.balance) return alert('Saldo insuficiente en la cuenta seleccionada.');
     if (amount > payable.balance) return alert('El abono excede el saldo pendiente de la factura.');
 
+    // Guardar saldo anterior para el comprobante
+    const previousBalance = payable.balance;
+
     account.balance -= amount;
     payable.balance -= amount;
     payable.status = payable.balance <= 0 ? 'Pagada' : 'Parcial';
@@ -2905,9 +2908,13 @@ function renderCashControl() {
     });
 
     saveData();
-    openPayableHistory(payable.id);
+    openPayableHistoryModal(payable.id);
     refreshAllUI();
-    alert('Abono a proveedor registrado correctamente.');
+    
+    // Preguntar si se desea enviar el comprobante de abono al proveedor por WhatsApp
+    if (confirm(`¡Abono registrado con éxito por ${formatCOP(amount)}!\n\n¿Deseas enviar el comprobante de pago por WhatsApp al proveedor?`)) {
+        sendPayablePaymentWhatsApp(payable, amount, previousBalance, payable.balance, account.name);
+    }
 }
 
         // --- CLIENTES & CARTERA ---
@@ -4004,6 +4011,42 @@ function updateLiveClock() {
 
 // Iniciar el reloj al cargar la página y actualizar cada segundo
 setInterval(updateLiveClock, 1000);
+// FUNCIÓN PARA ENVIAR COMPROBANTE DE ABONO A PROVEEDOR POR WHATSAPP
+function sendPayablePaymentWhatsApp(payable, amountPaid, previousBalance, remainingBalance, accountName) {
+    const today = new Date().toLocaleString();
+    const providerName = payable.providerName || 'Proveedor';
+    const invoiceNum = payable.num || 'S/N';
+
+    let msg = `=====================================\n`;
+    msg += `   *COMPROBANTE DE ABONO A PROVEEDOR*\n`;
+    msg += `=====================================\n\n`;
+    msg += `🏢 *Proveedor:* ${providerName}\n`;
+    msg += `🧾 *Factura #:* ${invoiceNum}\n`;
+    msg += `📅 *Fecha / Hora:* ${today}\n\n`;
+    msg += `💵 *Monto Abonado:* *${formatCOP(amountPaid)}*\n`;
+    msg += `💳 *Método / Cuenta:* ${accountName}\n\n`;
+    msg += `--- *ESTADO DE CUENTA* ---\n`;
+    msg += `🔴 Saldo Anterior: ${formatCOP(previousBalance)}\n`;
+    msg += `🟢 Saldo Actual Pendiente: *${formatCOP(remainingBalance)}*\n\n`;
+
+    if (remainingBalance <= 0) {
+        msg += `🎉 ¡Factura pagada en su totalidad! Cuenta a paz y salvo.\n\n`;
+    } else {
+        msg += `📌 ¡Gracias por su gestión y despacho!\n\n`;
+    }
+
+    msg += `=====================================\n`;
+    msg += `_Comprobante emitido por POS Master_`;
+
+    // Buscar el teléfono del proveedor si está registrado
+    const provider = state.providers.find(p => p.name.toLowerCase() === providerName.toLowerCase());
+    let phone = provider && provider.phone ? provider.phone.replace(/\D/g, '') : '';
+
+    const encoded = encodeURIComponent(msg);
+    const url = phone.length >= 7 ? `https://api.whatsapp.com/send?phone=${phone}&text=${encoded}` : `https://api.whatsapp.com/send?text=${encoded}`;
+
+    window.open(url, '_blank');
+}
  </script>
 <!-- TICKET TÉRMICO OCULTO PARA IMPRESIÓN 80MM -->
 <div id="thermal-ticket" class="hidden">
