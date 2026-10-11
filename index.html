@@ -2531,8 +2531,7 @@ function renderCashControl() {
             }
         }
 
-        // --- CUENTAS POR PAGAR Y PROVEEDORES ---
-        function renderPayables() {
+       function renderPayables() {
             const tbody = document.getElementById('payables-table-body');
             if (!tbody) return;
             tbody.innerHTML = '';
@@ -2555,6 +2554,10 @@ function renderCashControl() {
                         <td class="p-3 font-semibold text-slate-800">${formatCOP(inv.total)}</td>
                         <td class="p-3 font-bold ${balance > 0 ? 'text-rose-600' : 'text-emerald-600'}">${formatCOP(balance)}</td>
                         <td class="p-3 text-right space-x-1">
+                            <!-- NUEVO BOTÓN DE WHATSAPP -->
+                            <button onclick="sendInvoiceToProviderWhatsApp(${inv.id})" class="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-lg font-bold text-xs transition" title="Enviar Factura por WhatsApp">
+                                <i class="fa-brands fa-whatsapp text-sm"></i>
+                            </button>
                             <button onclick="openPayableHistoryModal(${inv.id})" class="px-2.5 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 rounded-lg font-bold text-xs">
                                 <i class="fa-solid fa-hand-holding-dollar mr-1"></i> Abonos / Ver
                             </button>
@@ -2566,6 +2569,44 @@ function renderCashControl() {
                 `;
             });
         }
+        // FUNCIÓN PARA ENVIAR FACTURA DE COMPRA AL PROVEEDOR POR WHATSAPP
+function sendInvoiceToProviderWhatsApp(payableId) {
+    const inv = state.payables.find(p => p.id === payableId);
+    if (!inv) return alert('Factura no encontrada.');
+
+    const provider = state.providers.find(p => p.id === inv.providerId);
+    const providerName = provider ? provider.name : (inv.providerName || 'Proveedor');
+    const balance = inv.total - (inv.paid || 0);
+
+    let msg = `=====================================\n`;
+    msg += `       *FACTURA DE COMPRA / GASTO*\n`;
+    msg += `=====================================\n\n`;
+    msg += `🏢 *Proveedor:* ${providerName}\n`;
+    msg += `🧾 *Factura #:* ${inv.num}\n`;
+    msg += `📅 *Fecha:* ${inv.date}\n\n`;
+
+    if (inv.items && inv.items.length > 0) {
+        msg += `--- *DETALLE DE ARTÍCULOS* ---\n`;
+        inv.items.forEach(item => {
+            const itemCost = item.cost !== undefined ? item.cost : item.price;
+            msg += `• ${item.name} (x${item.qty}) - ${formatCOP(itemCost * item.qty)}\n`;
+        });
+        msg += `\n`;
+    }
+
+    msg += `💰 *Monto Total:* ${formatCOP(inv.total)}\n`;
+    msg += `💵 *Abonado:* ${formatCOP(inv.paid || 0)}\n`;
+    msg += `📌 *Saldo Pendiente:* *${formatCOP(balance)}*\n`;
+    msg += `📌 *Estado:* ${balance <= 0 ? 'PAGADA' : 'PENDIENTE'}\n\n`;
+    msg += `=====================================\n`;
+    msg += `_Comprobante emitido por POS Master_`;
+
+    let phone = provider && provider.phone ? provider.phone.replace(/\D/g, '') : '';
+    const encoded = encodeURIComponent(msg);
+    const url = phone.length >= 7 ? `https://api.whatsapp.com/send?phone=${phone}&text=${encoded}` : `https://api.whatsapp.com/send?text=${encoded}`;
+
+    window.open(url, '_blank');
+}
 
         function openProviderModal() {
             document.getElementById('provider-modal').classList.remove('hidden');
@@ -2624,46 +2665,47 @@ function renderCashControl() {
         }
 
         // --- MODAL FACTURA Y EDICIÓN DE VALORES DE ARTÍCULOS ---
-        function openInvoiceModal(editId = null) {
-            document.getElementById('invoice-modal').classList.remove('hidden');
-            const providerSelect = document.getElementById('inv-provider');
-            const existingSelect = document.getElementById('inv-item-existing');
+       function openInvoiceModal(editId = null) {
+    document.getElementById('invoice-modal').classList.remove('hidden');
+    
+    // Cargar opciones de proveedores
+    const providerSelect = document.getElementById('inv-provider');
+    providerSelect.innerHTML = '';
+    state.providers.forEach(p => {
+        providerSelect.innerHTML += `<option value="${p.id}">${p.name}</option>`;
+    });
 
-            providerSelect.innerHTML = '';
-            state.providers.forEach(p => {
-                providerSelect.innerHTML += `<option value="${p.id}">${p.name}</option>`;
-            });
+    const existingSelect = document.getElementById('inv-item-existing');
+    existingSelect.innerHTML = '<option value="">-- Nuevo / Personalizado --</option>';
+    state.products.forEach(p => {
+        existingSelect.innerHTML += `<option value="${p.id}">${p.name} (Cat: ${p.category})</option>`;
+    });
 
-            existingSelect.innerHTML = '<option value="">-- Nuevo / Personalizado --</option>';
-            state.products.forEach(p => {
-                existingSelect.innerHTML += `<option value="${p.id}">${p.name} (Cat: ${p.category})</option>`;
-            });
+    if (editId) {
+        const inv = state.payables.find(i => i.id === parseInt(editId));
+        if (inv) {
+            document.getElementById('invoice-modal-title').innerText = 'Editar Factura de Compra';
+            document.getElementById('inv-edit-id').value = inv.id;
+            document.getElementById('inv-num').value = inv.num || '';
+            document.getElementById('inv-provider').value = inv.providerId || '';
+            tempInvoiceItems = [...(inv.items || [])];
 
-            if (editId) {
-                const inv = state.payables.find(i => i.id === parseInt(editId));
-                if (inv) {
-                    document.getElementById('invoice-modal-title').innerText = 'Editar Factura de Compra';
-                    document.getElementById('inv-edit-id').value = inv.id;
-                    document.getElementById('inv-num').value = inv.num;
-                    document.getElementById('inv-provider').value = inv.providerId;
-                    tempInvoiceItems = [...(inv.items || [])];
-
-                    document.getElementById('inv-paid-container').classList.add('hidden');
-                    document.getElementById('inv-account-container').classList.add('hidden');
-                }
-            } else {
-                document.getElementById('invoice-modal-title').innerText = 'Nueva Factura de Compra';
-                document.getElementById('inv-edit-id').value = '';
-                document.getElementById('inv-num').value = '';
-                document.getElementById('inv-paid').value = 0;
-                tempInvoiceItems = [];
-
-                document.getElementById('inv-paid-container').classList.remove('hidden');
-                document.getElementById('inv-account-container').classList.remove('hidden');
-            }
-
-            renderInvoiceItemsTable();
+            document.getElementById('inv-paid-container').classList.add('hidden');
+            document.getElementById('inv-account-container').classList.add('hidden');
         }
+    } else {
+        document.getElementById('invoice-modal-title').innerText = 'Nueva Factura de Compra';
+        document.getElementById('inv-edit-id').value = '';
+        document.getElementById('inv-num').value = '';
+        document.getElementById('inv-paid').value = 0;
+        tempInvoiceItems = [];
+
+        document.getElementById('inv-paid-container').classList.remove('hidden');
+        document.getElementById('inv-account-container').classList.remove('hidden');
+    }
+
+    renderInvoiceItemsTable();
+}
 
         function closeInvoiceModal() {
             document.getElementById('invoice-modal').classList.add('hidden');
@@ -2762,9 +2804,10 @@ function renderCashControl() {
             tempInvoiceItems.splice(index, 1);
             renderInvoiceItemsTable();
         }
-
-     function saveInvoice() {
+function saveInvoice() {
     if (!state.cashRegister.isOpen) return alert('La caja está cerrada. No se pueden realizar modificaciones.');
+    
+    const editId = document.getElementById('inv-edit-id').value;
     const invNum = document.getElementById('inv-num').value.trim();
     const providerId = parseInt(document.getElementById('inv-provider').value);
     const total = parseFloat(document.getElementById('inv-total').value) || 0;
@@ -2772,10 +2815,32 @@ function renderCashControl() {
     const accountId = parseInt(document.getElementById('inv-account').value);
 
     if (!invNum || isNaN(total) || total <= 0) return alert('Completa los datos principales de la factura.');
-    if (initialPaid > 0 && !accountId) return alert('Selecciona una cuenta de salida para el abono inicial.');
 
     const provider = state.providers.find(p => p.id === providerId);
     const providerName = provider ? provider.name : 'General';
+
+    // SI ESTAMOS EDITANDO UNA FACTURA EXISTENTE
+    if (editId) {
+        const existingInvoice = state.payables.find(p => p.id === parseInt(editId));
+        if (existingInvoice) {
+            existingInvoice.num = invNum;
+            existingInvoice.providerId = providerId;
+            existingInvoice.providerName = providerName;
+            existingInvoice.total = total;
+            existingInvoice.balance = total - (existingInvoice.paid || 0);
+            existingInvoice.status = existingInvoice.balance <= 0 ? 'Pagada' : (existingInvoice.paid > 0 ? 'Parcial' : 'Pendiente');
+            existingInvoice.items = [...tempInvoiceItems];
+            
+            saveData();
+            closeInvoiceModal();
+            refreshAllUI();
+            alert('¡Factura de compra actualizada con éxito sin crear registros duplicados!');
+            return;
+        }
+    }
+
+    // SI ES UNA FACTURA NUEVA
+    if (initialPaid > 0 && !accountId) return alert('Selecciona una cuenta de salida para el abono inicial.');
 
     if (initialPaid > 0) {
         const account = state.accounts.find(a => a.id === accountId);
@@ -2788,7 +2853,6 @@ function renderCashControl() {
     const balanceDue = total - initialPaid;
     const status = balanceDue <= 0 ? 'Pagada' : (initialPaid > 0 ? 'Parcial' : 'Pendiente');
 
-    // Registrar artículos en inventario o actualizar stock según tempInvoiceItems
     tempInvoiceItems.forEach(item => {
         let prod = state.products.find(p => p.name.toLowerCase() === item.name.toLowerCase());
         if (prod) {
@@ -2807,13 +2871,15 @@ function renderCashControl() {
 
     const newPayable = {
         id: Date.now(),
-        invNum: invNum,
+        num: invNum,
+        providerId: providerId,
         providerName: providerName,
         date: new Date().toLocaleDateString(),
         total: total,
+        paid: initialPaid,
         balance: balanceDue,
         status: status,
-        payments: initialPaid > 0 ? [{ date: new Date().toLocaleString(), amount: initialPaid, account: state.accounts.find(a => a.id === accountId)?.name || 'Efectivo' }] : [],
+        paymentsHistory: initialPaid > 0 ? [{ date: new Date().toLocaleString(), amount: initialPaid, account: accountId }] : [],
         items: [...tempInvoiceItems]
     };
 
