@@ -2878,7 +2878,7 @@ function renderCashControl() {
             document.getElementById('payable-history-modal').classList.add('hidden');
         }
 
-  function submitPayablePayment() {
+ function submitPayablePayment() {
     if (!state.cashRegister.isOpen) return alert('La caja está cerrada. No se pueden realizar modificaciones.');
     const invId = parseInt(document.getElementById('payable-inv-id').value);
     const amount = parseFloat(document.getElementById('payable-pay-amount').value);
@@ -2892,15 +2892,15 @@ function renderCashControl() {
     if (!payable || !account) return alert('Factura o cuenta inválida.');
     if (amount > account.balance) return alert('Saldo insuficiente en la cuenta seleccionada.');
 
-    // Obtener el saldo actual de la factura (soporta tanto 'balance' como calculándolo desde 'paid')
+    // Obtener el saldo anterior de la factura de forma segura
     const previousBalance = payable.balance !== undefined ? payable.balance : (payable.total - (payable.paid || 0));
 
     if (amount > previousBalance) return alert('El abono excede el saldo pendiente de la factura.');
 
-    // 1. Restar el abono a la cuenta de origen
+    // 1. Restar el abono de la cuenta de origen
     account.balance -= amount;
 
-    // 2. Restar el abono de la deuda de la factura
+    // 2. Actualizar saldos y estado de la factura
     const newBalance = previousBalance - amount;
     payable.balance = newBalance;
     payable.paid = (payable.paid || 0) + amount;
@@ -2915,10 +2915,15 @@ function renderCashControl() {
     });
 
     saveData();
-    openPayableHistoryModal(payable.id);
+
+    // 4. Forzar la actualización inmediata de la interfaz y la tabla móvil/escritorio
     refreshAllUI();
-    
-    // 4. Confirmación e impresión de comprobante por WhatsApp
+    renderPayables();
+
+    // 5. Cerrar el modal de historial y abonos para reflejar los cambios en pantalla
+    closePayableHistoryModal();
+
+    // 6. Confirmación y opción de enviar el comprobante por WhatsApp
     if (confirm(`¡Abono registrado con éxito por ${formatCOP(amount)}!\n\n¿Deseas enviar el comprobante de pago por WhatsApp al proveedor?`)) {
         sendPayablePaymentWhatsApp(payable, amount, previousBalance, newBalance, account.name);
     }
