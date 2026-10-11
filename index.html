@@ -2878,7 +2878,7 @@ function renderCashControl() {
             document.getElementById('payable-history-modal').classList.add('hidden');
         }
 
-    function submitPayablePayment() {
+  function submitPayablePayment() {
     if (!state.cashRegister.isOpen) return alert('La caja está cerrada. No se pueden realizar modificaciones.');
     const invId = parseInt(document.getElementById('payable-inv-id').value);
     const amount = parseFloat(document.getElementById('payable-pay-amount').value);
@@ -2891,15 +2891,22 @@ function renderCashControl() {
 
     if (!payable || !account) return alert('Factura o cuenta inválida.');
     if (amount > account.balance) return alert('Saldo insuficiente en la cuenta seleccionada.');
-    if (amount > payable.balance) return alert('El abono excede el saldo pendiente de la factura.');
 
-    // Guardar saldo anterior para el comprobante
-    const previousBalance = payable.balance;
+    // Obtener el saldo actual de la factura (soporta tanto 'balance' como calculándolo desde 'paid')
+    const previousBalance = payable.balance !== undefined ? payable.balance : (payable.total - (payable.paid || 0));
 
+    if (amount > previousBalance) return alert('El abono excede el saldo pendiente de la factura.');
+
+    // 1. Restar el abono a la cuenta de origen
     account.balance -= amount;
-    payable.balance -= amount;
-    payable.status = payable.balance <= 0 ? 'Pagada' : 'Parcial';
 
+    // 2. Restar el abono de la deuda de la factura
+    const newBalance = previousBalance - amount;
+    payable.balance = newBalance;
+    payable.paid = (payable.paid || 0) + amount;
+    payable.status = newBalance <= 0 ? 'Pagada' : 'Parcial';
+
+    // 3. Registrar el pago en el historial de la factura
     if (!payable.payments) payable.payments = [];
     payable.payments.push({
         date: new Date().toLocaleString(),
@@ -2911,9 +2918,9 @@ function renderCashControl() {
     openPayableHistoryModal(payable.id);
     refreshAllUI();
     
-    // Preguntar si se desea enviar el comprobante de abono al proveedor por WhatsApp
+    // 4. Confirmación e impresión de comprobante por WhatsApp
     if (confirm(`¡Abono registrado con éxito por ${formatCOP(amount)}!\n\n¿Deseas enviar el comprobante de pago por WhatsApp al proveedor?`)) {
-        sendPayablePaymentWhatsApp(payable, amount, previousBalance, payable.balance, account.name);
+        sendPayablePaymentWhatsApp(payable, amount, previousBalance, newBalance, account.name);
     }
 }
 
@@ -4015,7 +4022,7 @@ setInterval(updateLiveClock, 1000);
 function sendPayablePaymentWhatsApp(payable, amountPaid, previousBalance, remainingBalance, accountName) {
     const today = new Date().toLocaleString();
     const providerName = payable.providerName || 'Proveedor';
-    const invoiceNum = payable.num || 'S/N';
+    const invoiceNum = payable.invNum || payable.num || 'S/N';
 
     let msg = `=====================================\n`;
     msg += `   *COMPROBANTE DE ABONO A PROVEEDOR*\n`;
@@ -4025,9 +4032,10 @@ function sendPayablePaymentWhatsApp(payable, amountPaid, previousBalance, remain
     msg += `📅 *Fecha / Hora:* ${today}\n\n`;
     msg += `💵 *Monto Abonado:* *${formatCOP(amountPaid)}*\n`;
     msg += `💳 *Método / Cuenta:* ${accountName}\n\n`;
-    msg += `--- *ESTADO DE CUENTA* ---\n`;
-    msg += `🔴 Saldo Anterior: ${formatCOP(previousBalance)}\n`;
-    msg += `🟢 Saldo Actual Pendiente: *${formatCOP(remainingBalance)}*\n\n`;
+    msg += `--- *ESTADO DE LA FACTURA* ---\n`;
+    msg += `🔴 Valor Deuda Anterior: ${formatCOP(previousBalance)}\n`;
+    msg += `🟢 Valor del Abono: ${formatCOP(amountPaid)}\n`;
+    msg += `📌 Saldo Pendiente Factura: *${formatCOP(remainingBalance)}*\n\n`;
 
     if (remainingBalance <= 0) {
         msg += `🎉 ¡Factura pagada en su totalidad! Cuenta a paz y salvo.\n\n`;
@@ -4038,7 +4046,7 @@ function sendPayablePaymentWhatsApp(payable, amountPaid, previousBalance, remain
     msg += `=====================================\n`;
     msg += `_Comprobante emitido por POS Master_`;
 
-    // Buscar el teléfono del proveedor si está registrado
+    // Buscar el teléfono del proveedor en la lista registrada
     const provider = state.providers.find(p => p.name.toLowerCase() === providerName.toLowerCase());
     let phone = provider && provider.phone ? provider.phone.replace(/\D/g, '') : '';
 
