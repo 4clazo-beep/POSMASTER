@@ -1,6 +1,32 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <!-- SDK de Firebase (Compat Version para fácil integración con JavaScript plano) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+<script>
+  const firebaseConfig = {
+
+  apiKey: "AIzaSyBE8He71lch5lgUtNm72QdFtOVI3hcbnrI",
+
+  authDomain: "pos-master-forromotos.firebaseapp.com",
+
+  projectId: "pos-master-forromotos",
+
+  storageBucket: "pos-master-forromotos.firebasestorage.app",
+
+  messagingSenderId: "102247986383",
+
+  appId: "1:102247986383:web:4391ac9341544b9482b3ba"
+
+};
+
+
+  // 2. Inicializar Firebase
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sistema POS Profesional - Venta e Inventario</title>
@@ -1557,7 +1583,8 @@ function checkLicenseOnLoad() {
 
         saveData();
 
-      function saveData() {
+   async function saveData() {
+    // 1. Mantener respaldo local en el navegador
     localStorage.setItem('pos_products', JSON.stringify(state.products));
     localStorage.setItem('pos_sales', JSON.stringify(state.sales));
     localStorage.setItem('pos_clients', JSON.stringify(state.clients));
@@ -1566,7 +1593,26 @@ function checkLicenseOnLoad() {
     localStorage.setItem('pos_payables', JSON.stringify(state.payables));
     localStorage.setItem('pos_cash', JSON.stringify(state.cashRegister));
     localStorage.setItem('pos_cash_history', JSON.stringify(state.cashHistory));
+
+    // 2. Sincronizar con Firebase Firestore (Colección "pos_database", documento único "main_data")
+    try {
+        await db.collection("pos_database").doc("main_data").set({
+            products: state.products,
+            sales: state.sales,
+            clients: state.clients,
+            accounts: state.accounts,
+            providers: state.providers,
+            payables: state.payables,
+            cashRegister: state.cashRegister,
+            cashHistory: state.cashHistory,
+            lastUpdated: new Date().toISOString()
+        });
+        console.log("Base de datos sincronizada en la nube con éxito.");
+    } catch (error) {
+        console.error("Error al guardar en Firebase:", error);
+    }
 }
+
 
         let tempInvoiceItems = [];
 
