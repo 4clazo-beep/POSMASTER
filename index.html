@@ -75,58 +75,6 @@
             opacity: 1;
         }
 
-        /* MODO OSCURO */
-        body.dark-mode {
-            background-color: #0b0f19;
-            color: #f3f4f6;
-        }
-        body.dark-mode header {
-            background-color: #111827 !important;
-            border-color: #1f2937 !important;
-        }
-        body.dark-mode header h1, 
-        body.dark-mode header span {
-            color: #f9fafb !important;
-        }
-        body.dark-mode .bg-white {
-            background-color: #111827 !important;
-            color: #f9fafb !important;
-            border-color: #1f2937 !important;
-        }
-        body.dark-mode .bg-slate-50,
-        body.dark-mode .bg-slate-100,
-        body.dark-mode .bg-purple-50\/20,
-        body.dark-mode .bg-emerald-50\/50,
-        body.dark-mode .bg-emerald-50\/20,
-        body.dark-mode .bg-emerald-50 {
-            background-color: #1f2937 !important;
-            color: #f3f4f6 !important;
-            border-color: #374151 !important;
-        }
-        body.dark-mode input, 
-        body.dark-mode select, 
-        body.dark-mode textarea {
-            background-color: #0b0f19 !important;
-            color: #f9fafb !important;
-            border-color: #374151 !important;
-        }
-        body.dark-mode input::placeholder,
-        body.dark-mode textarea::placeholder {
-            color: #9ca3af !important;
-        }
-
-        /* PRINT STYLES */
-        @media print {
-            body * { visibility: hidden; }
-            #thermal-ticket, #thermal-ticket * { visibility: visible; }
-            #thermal-ticket {
-                position: absolute; left: 0; top: 0; width: 80mm;
-                font-family: 'Courier New', Courier, monospace;
-                font-size: 11px; color: #000 !important; background: #fff !important;
-                padding: 5px; margin: 0;
-            }
-        }
-
         /* ANIMACIÓN DE SÍMBOLOS */
         .logo-particles-container {
             position: relative;
@@ -164,10 +112,6 @@
             opacity: 0;
             transform: scale(0.95) translateY(10px);
         }
-        .module-fade-active {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-        }
     </style>
 </head>
 <body class="bg-slate-900 font-sans antialiased text-slate-100 selection:bg-emerald-500 selection:text-white relative min-h-screen overflow-x-hidden">
@@ -176,24 +120,6 @@
     <div id="bg-slideshow-container">
         <div id="slide-1" class="bg-slide active"></div>
         <div id="slide-2" class="bg-slide"></div>
-    </div>
-
-    <!-- BANNER PROFESIONAL DE AVISO DE VENCIMIENTO -->
-    <div id="license-warning-banner" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 text-white px-5 py-3 rounded-2xl shadow-2xl backdrop-blur-md flex items-center gap-4 border border-amber-500/30 transition-all duration-700 opacity-0 pointer-events-none transform -translate-y-4 max-w-md w-[90%] md:w-auto">
-        <div class="flex items-center gap-2 pr-3 border-r border-slate-700/80 shrink-0">
-            <div class="animated-pos-logo logo-particles-container">
-                <i class="fa-solid fa-cash-register text-emerald-400 text-lg"></i>
-                <span class="particle-symbol">+</span>
-                <span class="particle-symbol">%</span>
-                <span class="particle-symbol">$</span>
-                <span class="particle-symbol">-</span>
-            </div>
-            <span class="animated-pos-title text-sm font-extrabold tracking-wide">POS Master</span>
-        </div>
-        <div class="flex items-center gap-2.5 flex-1 min-w-0">
-            <i class="fa-solid fa-triangle-exclamation text-amber-400 text-base shrink-0 animate-pulse"></i>
-            <span id="license-warning-text" class="text-xs md:text-sm text-slate-200 font-medium leading-tight"></span>
-        </div>
     </div>
 
     <!-- LANDING PAGE PROFESIONAL (SECCIÓN PRINCIPAL) -->
@@ -211,8 +137,8 @@
                 <span class="animated-pos-title text-2xl md:text-3xl font-extrabold tracking-wide">POS Master</span>
             </div>
             <button onclick="goToLicenseModal()" class="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold px-5 py-2.5 rounded-xl shadow-lg shadow-emerald-500/25 transition transform hover:-translate-y-0.5 flex items-center gap-2 text-sm md:text-base">
-                <i class="fa-solid fa-key text-emerald-200"></i>
-                <span>Ingresar Licencia</span>
+                <i class="fa-solid fa-right-to-bracket text-emerald-200"></i>
+                <span>Ingresar al Sistema</span>
             </button>
         </header>
 
@@ -230,7 +156,7 @@
                 </p>
             </div>
 
-            <!-- CARRUSEL / MUESTRA DE MÓDULOS ANIMADOS (DESVANECIMIENTO AUTOMÁTICO Y MANUAL) -->
+            <!-- CARRUSEL / MUESTRA DE MÓDULOS ANIMADOS -->
             <div class="w-full max-w-4xl relative">
                 <!-- Tarjeta del Módulo Exhibido -->
                 <div id="landing-module-card" class="module-card bg-slate-800/80 border border-slate-700/80 rounded-3xl p-6 md:p-10 shadow-2xl backdrop-blur-md text-left flex flex-col md:flex-row gap-6 md:gap-8 items-center">
@@ -248,7 +174,7 @@
                         </p>
                         <div class="pt-2 flex flex-wrap gap-3">
                             <button onclick="goToLicenseModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-2.5 rounded-xl transition shadow-lg text-xs md:text-sm flex items-center gap-2">
-                                <i class="fa-solid fa-unlock"></i> Probar este Módulo con tu Licencia
+                                <i class="fa-solid fa-arrow-right-to-bracket"></i> Ir al Sistema
                             </button>
                         </div>
                     </div>
@@ -269,8 +195,8 @@
             <!-- BOTÓN PRINCIPAL ACCESO -->
             <div class="pt-4">
                 <button onclick="goToLicenseModal()" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-lg md:text-xl px-10 py-4 rounded-2xl shadow-2xl shadow-emerald-500/30 transition transform hover:scale-105 flex items-center gap-3">
-                    <i class="fa-solid fa-key"></i>
-                    <span>ACCEDER AL SISTEMA / INGRESAR LICENCIA</span>
+                    <i class="fa-solid fa-right-to-bracket"></i>
+                    <span>ACCEDER AL SISTEMA POS</span>
                 </button>
             </div>
         </main>
@@ -281,330 +207,13 @@
         </footer>
     </div>
 
-    <!-- PANTALLA / MODAL DE BLOQUEO E INGRESO DE LICENCIA -->
-    <div id="license-screen" class="fixed inset-0 bg-slate-950/80 backdrop-blur-xl z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 md:p-8 shadow-2xl space-y-6 text-center relative">
-            <button onclick="closeLicenseModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg p-2">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-            <div class="w-16 h-16 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-2xl flex items-center justify-center mx-auto text-2xl shadow-inner">
-                <i class="fa-solid fa-key"></i>
-            </div>
-            <div>
-                <h2 class="text-2xl font-bold text-white">Activa tu Licencia</h2>
-                <p class="text-xs text-slate-400 mt-1">Ingresa el código de licencia para desbloquear los módulos del sistema.</p>
-            </div>
-            
-            <div class="space-y-4">
-                <div>
-                    <input type="text" id="license-input" placeholder="Ej: LIC-2026-10-31-KEY99" class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl font-mono text-center text-emerald-400 tracking-wider focus:outline-none focus:ring-2 focus:ring-emerald-500 uppercase text-sm">
-                    <p id="license-error" class="text-xs text-rose-500 mt-2 hidden font-semibold"></p>
-                </div>
-                <button onclick="activateLicense()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-emerald-600/20 text-sm">
-                    Validar Licencia y Entrar
-                </button>
-            </div>
-            
-            <p class="text-xs text-slate-500 border-t border-slate-800/80 pt-4">Soporte Técnico & Renovaciones: Contacta a tu Administrador</p>
-        </div>
-    </div>
-
-    <!-- CONTENEDOR PRINCIPAL DEL SISTEMA POS (POST-LOGIN) -->
-    <div id="app-container" class="flex h-screen overflow-hidden hidden bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100">
-        <!-- Sidebar de Navegación Desktop -->
-        <aside class="w-64 bg-slate-900 text-slate-300 flex-col hidden md:flex border-r border-slate-800">
-            <div class="p-5 text-xl font-bold text-white flex items-center justify-between border-b border-slate-800">
-                <div class="flex items-center gap-3">
-                    <div class="animated-pos-logo logo-particles-container">
-                        <i class="fa-solid fa-cash-register text-emerald-400 text-2xl"></i>
-                        <span class="particle-symbol">+</span>
-                        <span class="particle-symbol">%</span>
-                        <span class="particle-symbol">$</span>
-                        <span class="particle-symbol">-</span>
-                    </div>
-                    <span class="animated-pos-title">POS Master</span>
-                </div>
-                <button onclick="toggleDarkMode()" class="text-amber-400 hover:text-amber-300 transition p-1" title="Modo Oscuro / Claro">
-                    <i id="dark-mode-icon" class="fa-solid fa-moon text-lg"></i>
-                </button>
-            </div>
-            <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
-                <button onclick="switchTab('pos')" id="btn-pos" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-600 text-white font-medium transition">
-                    <i class="fa-solid fa-cart-shopping w-5"></i> Venta (POS)
-                </button>
-                <button onclick="switchTab('billing')" id="btn-billing" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
-                    <i class="fa-solid fa-file-invoice-dollar w-5"></i> Facturación
-                </button>
-                <button onclick="switchTab('inventory')" id="btn-inventory" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
-                    <i class="fa-solid fa-boxes-stacked w-5"></i> Inventario
-                </button>
-                <button onclick="switchTab('cash')" id="btn-cash" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
-                    <i class="fa-solid fa-vault w-5"></i> Caja / Cierre
-                </button>
-                <button onclick="switchTab('accounts')" id="btn-accounts" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
-                    <i class="fa-solid fa-wallet w-5"></i> Bancos & Efectivo
-                </button>
-                <button onclick="switchTab('payables')" id="btn-payables" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
-                    <i class="fa-solid fa-file-invoice-dollar w-5"></i> Cuentas por Pagar
-                </button>
-                <button onclick="switchTab('clients')" id="btn-clients" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
-                    <i class="fa-solid fa-users w-5"></i> Clientes & Crédito
-                </button>
-                <button onclick="switchTab('statistics')" id="btn-statistics" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
-                    <i class="fa-solid fa-chart-pie w-5"></i> Estadísticas
-                </button>
-                <button onclick="switchTab('reports')" id="btn-reports" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
-                    <i class="fa-solid fa-chart-line w-5"></i> Reportes
-                </button>
-            </nav>
-            <div class="p-4 border-t border-slate-800 text-xs text-slate-400 text-center space-y-1">
-                <div>Sistema POS v2.2 - Profesional</div>
-                <div id="license-expiry-display" class="font-semibold text-emerald-400"></div>
-                <button onclick="logoutLicense()" class="text-rose-400 hover:underline text-[10px] block mx-auto mt-1">Cambiar Licencia / Salir</button>
-            </div>
-        </aside>
-
-        <!-- BARRA DE NAVEGACIÓN INFERIOR PARA MÓVILES -->
-        <div class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 text-slate-400 flex justify-around items-center z-40 py-2 px-1">
-            <button onclick="switchTab('pos')" id="mob-btn-pos" class="flex flex-col items-center justify-center w-full text-emerald-400">
-                <i class="fa-solid fa-cart-shopping text-lg"></i>
-                <span class="text-[10px] font-medium mt-0.5">Venta</span>
-            </button>
-            <button onclick="switchTab('inventory')" id="mob-btn-inventory" class="flex flex-col items-center justify-center w-full">
-                <i class="fa-solid fa-boxes-stacked text-lg"></i>
-                <span class="text-[10px] font-medium mt-0.5">Inventario</span>
-            </button>
-            <button onclick="switchTab('cash')" id="mob-btn-cash" class="flex flex-col items-center justify-center w-full">
-                <i class="fa-solid fa-vault text-lg"></i>
-                <span class="text-[10px] font-medium mt-0.5">Caja</span>
-            </button>
-            <button onclick="switchTab('clients')" id="mob-btn-clients" class="flex flex-col items-center justify-center w-full">
-                <i class="fa-solid fa-users text-lg"></i>
-                <span class="text-[10px] font-medium mt-0.5">Clientes</span>
-            </button>
-            <button onclick="toggleMobileMoreMenu()" id="mob-btn-more" class="flex flex-col items-center justify-center w-full relative">
-                <i class="fa-solid fa-ellipsis-vertical text-lg"></i>
-                <span class="text-[10px] font-medium mt-0.5">Más</span>
-            </button>
-        </div>
-
-        <!-- MENÚ EMERGENTE "MÁS" EN MÓVIL -->
-        <div id="mobile-more-menu" class="md:hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex flex-col justify-end" onclick="toggleMobileMoreMenu()">
-            <div class="bg-white dark:bg-slate-900 rounded-t-3xl p-5 space-y-3 animate-slide-up" onclick="event.stopPropagation()">
-                <div class="w-12 h-1 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto mb-2"></div>
-                <div class="flex justify-between items-center mb-3 px-2 border-b border-slate-100 dark:border-slate-800 pb-3">
-                    <div class="flex items-center gap-2.5">
-                        <i class="fa-solid fa-cash-register text-emerald-500 text-xl"></i>
-                        <span class="animated-pos-title text-base font-extrabold">POS Master</span>
-                    </div>
-                    <button onclick="toggleDarkMode()" class="text-amber-500 font-bold text-xs flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 px-2.5 py-1.5 rounded-xl">
-                        <i id="dark-mode-icon-mob" class="fa-solid fa-moon"></i>
-                        <span>Modo Oscuro</span>
-                    </button>
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <button onclick="switchTab('accounts'); toggleMobileMoreMenu();" id="mob-btn-accounts" class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 font-medium text-xs">
-                        <i class="fa-solid fa-wallet text-emerald-600 text-base"></i> Bancos & Efec.
-                    </button>
-                    <button onclick="switchTab('billing'); toggleMobileMoreMenu();" id="mob-btn-billing" class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 font-medium text-xs">
-                        <i class="fa-solid fa-file-invoice-dollar text-emerald-600 text-base"></i> Facturación
-                    </button>
-                    <button onclick="switchTab('payables'); toggleMobileMoreMenu();" id="mob-btn-payables" class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 font-medium text-xs">
-                        <i class="fa-solid fa-file-invoice-dollar text-emerald-600 text-base"></i> Cuentas x Pagar
-                    </button>
-                    <button onclick="switchTab('statistics'); toggleMobileMoreMenu();" id="mob-btn-statistics" class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 font-medium text-xs">
-                        <i class="fa-solid fa-chart-pie text-emerald-600 text-base"></i> Estadísticas
-                    </button>
-                    <button onclick="switchTab('reports'); toggleMobileMoreMenu();" id="mob-btn-reports" class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 font-medium text-xs">
-                        <i class="fa-solid fa-chart-line text-emerald-600 text-base"></i> Reportes
-                    </button>
-                </div>
-                <div class="text-center pt-2">
-                    <div id="license-expiry-display-mob" class="text-[11px] font-semibold text-emerald-600"></div>
-                </div>
-                <div class="pt-2 border-t mt-3 flex justify-between items-center text-[11px] text-slate-400 px-1">
-                    <span>Sistema POS v2.2</span>
-                    <button onclick="logoutLicense()" class="text-rose-500 font-semibold">Cambiar Licencia / Salir</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- CONTENIDO PRINCIPAL -->
-        <main class="flex-1 flex flex-col h-screen overflow-y-auto pb-16 md:pb-0">
-            <!-- HEADER DEL PANEL -->
-            <header class="bg-white dark:bg-slate-900 shadow-sm px-4 md:px-6 py-3 md:py-4 flex flex-col md:flex-row justify-between items-center gap-3 z-10 border-b border-slate-200 dark:border-slate-800">
-                <div class="flex justify-between items-center w-full md:w-auto">
-                    <h1 id="page-title" class="text-lg md:text-xl font-bold text-slate-800 dark:text-white">Terminal de Venta (POS)</h1>
-                    <span id="cash-status-badge" class="px-2.5 py-0.5 bg-amber-100 text-amber-800 rounded-full text-[11px] font-semibold md:hidden">Caja Cerrada</span>
-                </div>
-                
-                <div class="flex items-center gap-2 md:gap-3 flex-wrap w-full md:w-auto justify-between md:justify-end">
-                    <div class="flex items-center gap-1.5 w-full sm:w-auto">
-                        <button onclick="exportToExcel()" class="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition shadow-sm">
-                            <i class="fa-solid fa-file-excel text-xs"></i> Exportar Excel
-                        </button>
-                        <label class="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 text-white px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer transition shadow-sm">
-                            <i class="fa-solid fa-file-import text-xs"></i> Importar Excel
-                            <input type="file" id="excel-file-input" accept=".xlsx, .xls" class="hidden" onchange="importFromExcel(event)">
-                        </label>
-                    </div>
-
-                    <div class="hidden md:flex items-center gap-4">
-                        <span class="text-sm text-slate-500"><i class="fa-regular fa-calendar-days mr-2"></i><span id="current-date"></span></span>
-                        <span class="text-sm text-slate-600 font-medium bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-xl flex items-center gap-1.5 border border-slate-200 dark:border-slate-700">
-                            <i class="fa-regular fa-clock text-emerald-500"></i>
-                            <span id="current-time" class="font-bold text-slate-700 dark:text-slate-200">00:00:00</span>
-                        </span>
-                    </div>
-                </div>
-            </header>
-
-            <!-- BANNER INFORMATIVO -->
-            <div id="module-info-banner" class="mx-3 md:mx-6 mt-3 p-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-2xl shadow-sm flex items-start gap-3 transition-all duration-300">
-                <div class="p-2 bg-white/20 rounded-xl text-xl flex items-center justify-center">
-                    <i id="module-info-icon" class="fa-solid fa-circle-info"></i>
-                </div>
-                <div class="flex-1">
-                    <h3 id="module-info-title" class="font-bold text-xs md:text-sm uppercase tracking-wide">Información del Módulo</h3>
-                    <p id="module-info-desc" class="text-xs md:text-sm opacity-95 mt-0.5">Información explicativa del módulo seleccionado.</p>
-                </div>
-            </div>
-
-            <!-- CONTENEDOR DE VISTAS MÓDULOS -->
-            <div class="p-3 md:p-6 flex-1">
-                <!-- VISTA POS (VENTAS) -->
-                <section id="view-pos" class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 h-full">
-                    <div class="lg:col-span-2 flex flex-col h-full bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-3 md:p-4 border border-slate-100 dark:border-slate-700">
-                        <div class="mb-3">
-                            <input type="text" id="pos-search" oninput="filterPOSProducts()" placeholder="Buscar producto por nombre o categoría..." class="w-full px-3 md:px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                        </div>
-                        <div id="pos-product-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 md:gap-4 overflow-y-auto flex-1 p-0.5 max-h-[380px] lg:max-h-none"></div>
-                    </div>
-
-                    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-3 md:p-4 flex flex-col h-full border border-slate-100 dark:border-slate-700">
-                        <h2 class="text-md md:text-lg font-bold text-slate-800 dark:text-white mb-2 border-b dark:border-slate-700 pb-2 flex justify-between items-center">
-                            <span>Carrito de Compra</span>
-                            <button onclick="clearCart()" class="text-rose-500 text-xs font-normal hover:underline">Vaciar</button>
-                        </h2>
-
-                        <div class="mb-3 space-y-2">
-                            <div>
-                                <label class="block text-[10px] md:text-xs font-semibold text-slate-500 uppercase">Cliente / Nombre Venta</label>
-                                <input type="text" id="cart-client-name" list="clients-datalist" placeholder="Ej: Juan Pérez" class="w-full px-3 py-1.5 border rounded-xl text-xs md:text-sm font-medium bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700">
-                                <datalist id="clients-datalist"></datalist>
-                            </div>
-                        </div>
-
-                        <div id="cart-items" class="flex-1 overflow-y-auto space-y-2 max-h-[220px] lg:max-h-none pr-1"></div>
-
-                        <div class="border-t dark:border-slate-700 pt-2 mt-2 space-y-2">
-                            <div class="flex justify-between text-base md:text-lg font-bold">
-                                <span>Total a Pagar</span>
-                                <span id="cart-total" class="text-emerald-500">$0.000</span>
-                            </div>
-                            <div>
-                                <label class="block text-[10px] md:text-xs font-semibold text-slate-500 uppercase mb-1">Método de Pago</label>
-                                <select id="checkout-account" class="w-full px-3 py-1.5 border rounded-xl text-xs md:text-sm font-medium bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"></select>
-                            </div>
-                            <div class="grid grid-cols-2 gap-2 pt-1">
-                                <button onclick="checkout('Efectivo')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 rounded-xl transition text-xs md:text-sm">
-                                    <i class="fa-solid fa-money-bill-wave mr-1"></i> Cobrar Efec.
-                                </button>
-                                <button onclick="checkout('Transferencia')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-xl transition text-xs md:text-sm">
-                                    <i class="fa-solid fa-right-left mr-1"></i> Transf.
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- OTROS MÓDULOS DE LA APLICACIÓN (MANTENIDOS Y TOTALMENTE INTEGRADOS) -->
-                <section id="view-billing" class="hidden space-y-4">
-                    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-4 border border-slate-100 dark:border-slate-700">
-                        <h3 class="font-bold text-lg mb-2">Módulo de Facturación Central</h3>
-                        <p class="text-sm text-slate-500">Historial general de comprobantes emitidos y facturas registradas.</p>
-                        <div class="mt-4 overflow-x-auto">
-                            <table class="w-full text-left border-collapse text-xs md:text-sm">
-                                <thead>
-                                    <tr class="border-b dark:border-slate-700 text-slate-500">
-                                        <th class="p-2">Código</th>
-                                        <th class="p-2">Tipo</th>
-                                        <th class="p-2">Fecha</th>
-                                        <th class="p-2">Cliente / Proveedor</th>
-                                        <th class="p-2 text-right">Total</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="billing-table-body" class="divide-y dark:divide-slate-700"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
-
-                <section id="view-inventory" class="hidden space-y-4">
-                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-100 dark:border-slate-700 flex justify-between items-center">
-                        <h3 class="font-bold text-lg">Catálogo e Inventario</h3>
-                        <button onclick="openProductModal()" class="bg-emerald-600 text-white px-4 py-2 rounded-xl text-xs font-bold">+ Nuevo Producto</button>
-                    </div>
-                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-100 dark:border-slate-700 overflow-x-auto">
-                        <table class="w-full text-left text-xs md:text-sm">
-                            <thead>
-                                <tr class="border-b dark:border-slate-700 text-slate-500">
-                                    <th class="p-2">Nombre</th>
-                                    <th class="p-2">Precio ($)</th>
-                                    <th class="p-2">Stock</th>
-                                    <th class="p-2 text-right">Acción</th>
-                                </tr>
-                            </thead>
-                            <tbody id="inventory-table-body" class="divide-y dark:divide-slate-700"></tbody>
-                        </table>
-                    </div>
-                </section>
-
-                <section id="view-cash" class="hidden space-y-4 max-w-4xl mx-auto">
-                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-100 dark:border-slate-700 space-y-4">
-                        <h3 class="font-bold text-lg">Control & Cierre de Caja</h3>
-                        <div id="cash-control-content"></div>
-                    </div>
-                </section>
-
-                <section id="view-accounts" class="hidden space-y-4">
-                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-100 dark:border-slate-700 flex justify-between items-center">
-                        <h3 class="font-bold text-lg">Bancos y Cuentas de Efectivo</h3>
-                        <button onclick="openAccountModal()" class="bg-emerald-600 text-white px-4 py-2 rounded-xl text-xs font-bold">+ Nueva Cuenta</button>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="accounts-cards-grid"></div>
-                </section>
-
-                <section id="view-payables" class="hidden space-y-4">
-                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-100 dark:border-slate-700">
-                        <h3 class="font-bold text-lg">Cuentas por Pagar a Proveedores</h3>
-                    </div>
-                </section>
-
-                <section id="view-clients" class="hidden space-y-4">
-                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-100 dark:border-slate-700 flex justify-between items-center">
-                        <h3 class="font-bold text-lg">Clientes y Cuentas por Cobrar</h3>
-                        <button onclick="openClientModal()" class="bg-emerald-600 text-white px-4 py-2 rounded-xl text-xs font-bold">+ Registrar Cliente</button>
-                    </div>
-                </section>
-
-                <section id="view-statistics" class="hidden space-y-4">
-                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-100 dark:border-slate-700">
-                        <h3 class="font-bold text-lg">Estadísticas y Dashboard de Rendimiento</h3>
-                    </div>
-                </section>
-
-                <section id="view-reports" class="hidden space-y-4">
-                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-100 dark:border-slate-700">
-                        <h3 class="font-bold text-lg">Reportes Generales</h3>
-                    </div>
-                </section>
-            </div>
-        </main>
-    </div>
-
-    <!-- SCRIPT DE NAVEGACIÓN Y FUNCIONALIDAD GENERAL -->
+    <!-- SCRIPT DE NAVEGACIÓN Y REDIRECCIÓN HACIA APP.HTML -->
     <script>
+        // REDIRECCIÓN DIRECTA A APP.HTML AL DAR CLIC EN ACCEDER
+        function goToLicenseModal() {
+            window.location.href = 'app.html';
+        }
+
         // SLIDESHOW DE FONDOS CON DESVANECIMIENTO
         const bgImages = Array.from({ length: 20 }, (_, i) => `https://picsum.photos/1920/1080?random=${i + 100}`);
         let currentBgIdx = 0;
@@ -635,7 +244,7 @@
             }, 6000);
         }
 
-        // INFORMACIÓN Y CARRUSEL DE MÓDULOS EN LA LANDING PAGE
+        // CARRUSEL DE MÓDULOS EN LANDING PAGE
         const landingModules = [
             {
                 title: "Terminal de Venta (POS)",
@@ -732,80 +341,11 @@
             startModuleAutoSwitch();
         }
 
-        // LICENCIAS Y CONTROL DE ACCESO
-        function goToLicenseModal() {
-            document.getElementById('license-screen').classList.remove('hidden');
-        }
-
-        function closeLicenseModal() {
-            document.getElementById('license-screen').classList.add('hidden');
-        }
-
-        function activateLicense() {
-            const key = document.getElementById('license-input').value.trim().toUpperCase();
-            if (!key) {
-                document.getElementById('license-error').innerText = "Ingresa un código de licencia válido.";
-                document.getElementById('license-error').classList.remove('hidden');
-                return;
-            }
-
-            localStorage.setItem('pos_license_key', key);
-            localStorage.setItem('pos_license_expiry', new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString());
-            
-            closeLicenseModal();
-            enterSystem();
-        }
-
-        function enterSystem() {
-            document.getElementById('landing-screen').classList.add('hidden');
-            document.getElementById('app-container').classList.remove('hidden');
-            const key = localStorage.getItem('pos_license_key') || 'LIC-2026-ACTIVA';
-            document.getElementById('license-expiry-display').innerText = `Licencia Activa: ${key}`;
-        }
-
-        function logoutLicense() {
-            localStorage.removeItem('pos_license_key');
-            document.getElementById('app-container').classList.add('hidden');
-            document.getElementById('landing-screen').classList.remove('hidden');
-        }
-
         // INICIALIZACIÓN
         window.addEventListener('DOMContentLoaded', () => {
             initBgSlideshow();
             startModuleAutoSwitch();
-
-            if (localStorage.getItem('pos_license_key')) {
-                enterSystem();
-            }
         });
-
-        // MODO OSCURO SISTEMA
-        function toggleDarkMode() {
-            document.body.classList.toggle('dark-mode');
-        }
-
-        // NAVEGACIÓN DENTRO DEL APP
-        function switchTab(tab) {
-            const views = ['pos', 'billing', 'inventory', 'cash', 'accounts', 'payables', 'clients', 'statistics', 'reports'];
-            views.forEach(v => {
-                const el = document.getElementById(`view-${v}`);
-                if (el) el.classList.add('hidden');
-            });
-            const targetView = document.getElementById(`view-${tab}`);
-            if (targetView) targetView.classList.remove('hidden');
-        }
-
-        function exportToExcel() { alert('Exportando base de datos a Excel...'); }
-        function importFromExcel(e) { alert('Archivo seleccionado para importación.'); }
-        function clearCart() { alert('Carrito vaciado.'); }
-        function checkout(type) { alert(`Venta procesada con método: ${type}`); }
-        function openProductModal() { alert('Modal de producto'); }
-        function openAccountModal() { alert('Modal de cuenta'); }
-        function openClientModal() { alert('Modal de cliente'); }
-        function filterPOSProducts() {}
-        function toggleMobileMoreMenu() {
-            document.getElementById('mobile-more-menu').classList.toggle('hidden');
-        }
     </script>
 </body>
 </html>
