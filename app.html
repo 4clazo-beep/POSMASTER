@@ -1679,7 +1679,17 @@ function checkLicenseOnLoad() {
 
         document.getElementById('current-date').innerText = new Date().toLocaleDateString();
 
-        function switchTab(tab) {
+      function switchTab(tab) {
+    // 🔒 PROTECCIÓN DE MÓDULOS CON PIN 1234 (Inventarios y Facturación)
+    if (tab === 'inventory' || tab === 'billing') {
+        const moduleName = tab === 'inventory' ? 'Inventarios' : 'Facturación';
+        const pin = prompt(`Ingrese el código PIN de seguridad de 4 dígitos para acceder a ${moduleName}:`);
+        if (pin === null) return; // Si cancela, no hace nada
+        if (pin.trim() !== "1234") {
+            alert("❌ Código PIN incorrecto. Acceso denegado.");
+            return;
+        }
+    }
            const tabs = ['pos', 'inventory', 'cash', 'accounts', 'payables', 'clients', 'statistics', 'reports', 'billing'];
             tabs.forEach(t => {
                 const view = document.getElementById(`view-${t}`);
@@ -2621,7 +2631,7 @@ function renderCashControl() {
             }
         }
 
-       function renderPayables() {
+      function renderPayables() {
             const tbody = document.getElementById('payables-table-body');
             if (!tbody) return;
             tbody.innerHTML = '';
@@ -2644,7 +2654,11 @@ function renderCashControl() {
                         <td class="p-3 font-semibold text-slate-800">${formatCOP(inv.total)}</td>
                         <td class="p-3 font-bold ${balance > 0 ? 'text-rose-600' : 'text-emerald-600'}">${formatCOP(balance)}</td>
                         <td class="p-3 text-right space-x-1">
-                            <!-- NUEVO BOTÓN DE WHATSAPP -->
+                            <!-- Botón para Editar Factura de Compra, Artículos, Costos y Stock -->
+                            <button onclick="openInvoiceModal(${inv.id})" class="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg font-bold text-xs transition" title="Editar Factura y Artículos">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>
+                            <!-- Botón de WhatsApp -->
                             <button onclick="sendInvoiceToProviderWhatsApp(${inv.id})" class="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-lg font-bold text-xs transition" title="Enviar Factura por WhatsApp">
                                 <i class="fa-brands fa-whatsapp text-sm"></i>
                             </button>
@@ -2798,41 +2812,43 @@ function sendInvoiceToProviderWhatsApp(payableId) {
             }
         }
 
-       function openInvoiceModal(editId = null) {
-    // Si se intenta editar una factura existente (editId no es nulo)
-    if (editId !== null && editId !== undefined && editId !== '') {
-        if (!state.cashRegister.isOpen) return alert('La caja está cerrada. No se pueden realizar modificaciones.');
+    function openInvoiceModal(editId = null) {
+    if (!state.cashRegister.isOpen) return alert('La caja está cerrada. No se pueden realizar modificaciones.');
 
-        // Solicitar el código PIN de seguridad de 4 dígitos
-        const pin = prompt("Ingrese el código PIN de seguridad de 4 dígitos para editar la factura de compra:");
-
-        if (pin === null) return; // Si el usuario cancela
-
-        if (pin.trim() !== "1234") {
-            return alert("❌ Código PIN incorrecto. No tiene autorización para editar esta factura de compra.");
-        }
-    }
-    // Cargar opciones de proveedores
     const providerSelect = document.getElementById('inv-provider');
-    providerSelect.innerHTML = '';
-    state.providers.forEach(p => {
-        providerSelect.innerHTML += `<option value="${p.id}">${p.name}</option>`;
-    });
+    if (providerSelect) {
+        providerSelect.innerHTML = '';
+        state.providers.forEach(p => {
+            providerSelect.innerHTML += `<option value="${p.id}">${p.name}</option>`;
+        });
+    }
 
     const existingSelect = document.getElementById('inv-item-existing');
-    existingSelect.innerHTML = '<option value="">-- Nuevo / Personalizado --</option>';
-    state.products.forEach(p => {
-        existingSelect.innerHTML += `<option value="${p.id}">${p.name} (Cat: ${p.category})</option>`;
-    });
+    if (existingSelect) {
+        existingSelect.innerHTML = '<option value="">-- Nuevo / Personalizado --</option>';
+        state.products.forEach(p => {
+            existingSelect.innerHTML += `<option value="${p.id}">${p.name} (Cat: ${p.category})</option>`;
+        });
+    }
 
+    // Si pasamos un ID, cargamos los datos de la factura existente para editarlos
     if (editId) {
-        const inv = state.payables.find(i => i.id === parseInt(editId));
+        const inv = state.payables.find(p => p.id === parseInt(editId));
         if (inv) {
             document.getElementById('invoice-modal-title').innerText = 'Editar Factura de Compra';
             document.getElementById('inv-edit-id').value = inv.id;
-            document.getElementById('inv-num').value = inv.num || '';
-            document.getElementById('inv-provider').value = inv.providerId || '';
-            tempInvoiceItems = [...(inv.items || [])];
+            document.getElementById('inv-num').value = inv.num;
+            if (providerSelect) providerSelect.value = inv.providerId;
+            document.getElementById('inv-paid').value = inv.paid || 0;
+            
+            // Cargar los artículos al arreglo temporal de edición
+            tempInvoiceItems = inv.items ? inv.items.map(i => ({
+                id: i.id || Date.now(),
+                name: i.name,
+                qty: i.qty,
+                cost: i.cost !== undefined ? i.cost : (i.price || 0),
+                price: i.price || 0
+            })) : [];
 
             document.getElementById('inv-paid-container').classList.add('hidden');
             document.getElementById('inv-account-container').classList.add('hidden');
@@ -2849,6 +2865,78 @@ function sendInvoiceToProviderWhatsApp(payableId) {
     }
 
     renderInvoiceItemsTable();
+    document.getElementById('invoice-modal').classList.remove('hidden');
+}
+
+// Guardar la nueva factura e impactar inventario y cuentas
+function saveInvoice() {
+    if (!state.cashRegister.isOpen) return alert('La caja está cerrada. No se pueden realizar modificaciones.');
+    
+    const invNum = document.getElementById('inv-num').value.trim();
+    const providerId = parseInt(document.getElementById('inv-provider').value);
+    const total = parseFloat(document.getElementById('inv-total').value) || 0;
+    const initialPaid = parseFloat(document.getElementById('inv-paid').value) || 0;
+    const accountId = parseInt(document.getElementById('inv-account').value);
+
+    if (!invNum || isNaN(total) || total <= 0) return alert('Completa los datos principales de la factura.');
+    if (tempInvoiceItems.length === 0) return alert('Agrega al menos un artículo a la factura de compra.');
+
+    const provider = state.providers.find(p => p.id === providerId);
+    const providerName = provider ? provider.name : 'General';
+
+    if (initialPaid > 0 && !accountId) return alert('Selecciona una cuenta de salida para el abono inicial.');
+
+    if (initialPaid > 0) {
+        const account = state.accounts.find(a => a.id === accountId);
+        if (account) {
+            if (account.balance < initialPaid) return alert('Saldo insuficiente en la cuenta seleccionada.');
+            account.balance -= initialPaid;
+        }
+    }
+
+    const balanceDue = total - initialPaid;
+    const status = balanceDue <= 0 ? 'Pagada' : (initialPaid > 0 ? 'Parcial' : 'Pendiente');
+
+    // Impactar inventario de forma automática
+    tempInvoiceItems.forEach(item => {
+        let prod = state.products.find(p => p.name.trim().toLowerCase() === item.name.trim().toLowerCase());
+        
+        if (prod) {
+            prod.stock += item.qty;
+            if (item.price !== undefined && !isNaN(item.price) && item.price > 0) {
+                prod.price = item.price;
+            }
+        } else {
+            state.products.push({
+                id: Date.now() + Math.random(),
+                name: item.name.trim(),
+                category: 'General',
+                barcode: '',
+                price: item.price || 0,
+                stock: item.qty
+            });
+        }
+    });
+
+    const newPayable = {
+        id: Date.now(),
+        num: invNum,
+        providerId: providerId,
+        providerName: providerName,
+        date: new Date().toLocaleDateString(),
+        total: total,
+        paid: initialPaid,
+        balance: balanceDue,
+        status: status,
+        paymentsHistory: initialPaid > 0 ? [{ date: new Date().toLocaleString(), amount: initialPaid, account: accountId }] : [],
+        items: [...tempInvoiceItems]
+    };
+
+    state.payables.unshift(newPayable);
+    saveData();
+    closeInvoiceModal();
+    refreshAllUI();
+    alert('¡Factura de compra registrada con éxito!');
 }
 
         function closeInvoiceModal() {
