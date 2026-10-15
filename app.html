@@ -25,6 +25,21 @@ const firebaseConfig = {
 
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
+  // --- ESTADO GLOBAL DE LA APLICACIÓN ---
+let state = {
+    products: JSON.parse(localStorage.getItem('pos_products')) || [],
+    sales: JSON.parse(localStorage.getItem('pos_sales')) || [],
+    clients: JSON.parse(localStorage.getItem('pos_clients')) || [],
+    accounts: JSON.parse(localStorage.getItem('pos_accounts')) || [
+        { id: 1, name: 'Caja General', type: 'Efectivo', balance: 0 },
+        { id: 2, name: 'Bancolombia', type: 'Banco', balance: 0 }
+    ],
+    providers: JSON.parse(localStorage.getItem('pos_providers')) || [],
+    payables: JSON.parse(localStorage.getItem('pos_payables')) || [],
+    cashRegister: JSON.parse(localStorage.getItem('pos_cash')) || { isOpen: false, initialAmount: 0, openTime: null, startTimeStamp: null },
+    cashHistory: JSON.parse(localStorage.getItem('pos_cash_history')) || [],
+    cart: []
+};
 </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -1555,69 +1570,62 @@ function checkLicenseOnLoad() {
             }
         }
 
-        window.addEventListener('DOMContentLoaded', () => {
-            initDarkMode();
-            startBackgroundSlideshow();
-            checkLicenseOnLoad();
-            listenRealtimeDatabase();
-            refreshAllUI();
-            updateModuleInfoBanner('pos');
-            updateLiveClock();
-        });
+     window.addEventListener('DOMContentLoaded', () => {
+    initDarkMode();
+    startBackgroundSlideshow();
+    checkLicenseOnLoad();
+    listenRealtimeDatabase(); // <--- ESTA LÍNEA ACTIVA LA SINCRONIZACIÓN EN TIEMPO REAL
+    refreshAllUI();
+    updateModuleInfoBanner('pos');
+    updateLiveClock();
+});
 function listenRealtimeDatabase() {
     db.collection("pos_database").doc("main_data").onSnapshot((doc) => {
         if (doc.exists) {
             const cloudData = doc.data();
             
-            // Evitamos sobrescribir si la versión local es más reciente o si estamos editando activamente
-            // Actualizamos el estado global con los datos de la nube
-            state.products = cloudData.products || [];
-            state.sales = cloudData.sales || [];
-            state.clients = cloudData.clients || [];
-            state.accounts = cloudData.accounts || [];
-            state.providers = cloudData.providers || [];
-            state.payables = cloudData.payables || [];
-            state.cashRegister = cloudData.cashRegister || state.cashRegister;
-            state.cashHistory = cloudData.cashHistory || [];
+            // Obtenemos la marca de tiempo de la nube y del dispositivo local
+            const cloudTime = new Date(cloudData.lastUpdated || 0).getTime();
+            const localTime = new Date(localStorage.getItem('pos_last_updated') || 0).getTime();
 
-            // Actualizamos también el almacenamiento local del navegador
-            localStorage.setItem('pos_products', JSON.stringify(state.products));
-            localStorage.setItem('pos_sales', JSON.stringify(state.sales));
-            localStorage.setItem('pos_clients', JSON.stringify(state.clients));
-            localStorage.setItem('pos_accounts', JSON.stringify(state.accounts));
-            localStorage.setItem('pos_providers', JSON.stringify(state.providers));
-            localStorage.setItem('pos_payables', JSON.stringify(state.payables));
-            localStorage.setItem('pos_cash', JSON.stringify(state.cashRegister));
-            localStorage.setItem('pos_cash_history', JSON.stringify(state.cashHistory));
+            // Sincronizar solo si la nube es más reciente, O si el local está vacío y la nube tiene datos
+            if (cloudTime >= localTime || (state.payables.length === 0 && cloudData.payables?.length > 0)) {
+                
+                state.products = cloudData.products || [];
+                state.sales = cloudData.sales || [];
+                state.clients = cloudData.clients || [];
+                state.accounts = cloudData.accounts || [];
+                state.providers = cloudData.providers || [];
+                state.payables = cloudData.payables || [];
+                state.cashRegister = cloudData.cashRegister || state.cashRegister;
+                state.cashHistory = cloudData.cashHistory || [];
 
-            // Refrescamos la interfaz gráfica automáticamente
-            refreshAllUI();
-            console.log("Datos sincronizados en tiempo real desde Firebase.");
+                // Guardar localmente con la marca de tiempo de la nube
+                localStorage.setItem('pos_products', JSON.stringify(state.products));
+                localStorage.setItem('pos_sales', JSON.stringify(state.sales));
+                localStorage.setItem('pos_clients', JSON.stringify(state.clients));
+                localStorage.setItem('pos_accounts', JSON.stringify(state.accounts));
+                localStorage.setItem('pos_providers', JSON.stringify(state.providers));
+                localStorage.setItem('pos_payables', JSON.stringify(state.payables));
+                localStorage.setItem('pos_cash', JSON.stringify(state.cashRegister));
+                localStorage.setItem('pos_cash_history', JSON.stringify(state.cashHistory));
+                localStorage.setItem('pos_last_updated', cloudData.lastUpdated);
+
+                refreshAllUI();
+                console.log("Datos sincronizados desde la nube de forma segura.");
+            } else {
+                console.log("Los datos locales son más recientes o iguales; se omite la sobrescritura.");
+            }
         }
     }, (error) => {
         console.error("Error al escuchar en tiempo real:", error);
     });
 }
-        // --- BASE DE DATOS Y ESTADO GLOBAL ---
-      let state = {
-    products: JSON.parse(localStorage.getItem('pos_products')) || [],
-    cart: [],
-    sales: JSON.parse(localStorage.getItem('pos_sales')) || [],
-    clients: JSON.parse(localStorage.getItem('pos_clients')) || [],
-    accounts: JSON.parse(localStorage.getItem('pos_accounts')) || [
-        { id: 1, name: 'Caja General', type: 'Efectivo', balance: 0 },
-        { id: 2, name: 'Cuenta Bancolombia', type: 'Banco', balance: 0 }
-    ],
-    providers: JSON.parse(localStorage.getItem('pos_providers')) || [],
-    payables: JSON.parse(localStorage.getItem('pos_payables')) || [],
-    cashRegister: JSON.parse(localStorage.getItem('pos_cash')) || { isOpen: false, initialAmount: 0, openTime: null, startTimeStamp: null },
-    cashHistory: JSON.parse(localStorage.getItem('pos_cash_history')) || []
-};
 
-        saveData();
-
-   async function saveData() {
-    // 1. Mantener respaldo local en el navegador
+async function saveData() {
+    const timestamp = new Date().toISOString();
+    
+    // 1. Guardar localmente junto con la marca de tiempo
     localStorage.setItem('pos_products', JSON.stringify(state.products));
     localStorage.setItem('pos_sales', JSON.stringify(state.sales));
     localStorage.setItem('pos_clients', JSON.stringify(state.clients));
@@ -1626,8 +1634,9 @@ function listenRealtimeDatabase() {
     localStorage.setItem('pos_payables', JSON.stringify(state.payables));
     localStorage.setItem('pos_cash', JSON.stringify(state.cashRegister));
     localStorage.setItem('pos_cash_history', JSON.stringify(state.cashHistory));
+    localStorage.setItem('pos_last_updated', timestamp);
 
-    // 2. Sincronizar con Firebase Firestore (Colección "pos_database", documento único "main_data")
+    // 2. Enviar a Firebase Firestore con la marca de tiempo exacta
     try {
         await db.collection("pos_database").doc("main_data").set({
             products: state.products,
@@ -1638,14 +1647,13 @@ function listenRealtimeDatabase() {
             payables: state.payables,
             cashRegister: state.cashRegister,
             cashHistory: state.cashHistory,
-            lastUpdated: new Date().toISOString()
+            lastUpdated: timestamp
         });
-        console.log("Base de datos sincronizada en la nube con éxito.");
+        console.log("Datos guardados y subidos a la nube correctamente.");
     } catch (error) {
         console.error("Error al guardar en Firebase:", error);
     }
 }
-
 
         let tempInvoiceItems = [];
 
@@ -1933,14 +1941,65 @@ function renderBillingModule() {
     });
 }
 
-// Función auxiliar para compartir cualquier factura por WhatsApp desde el módulo
+// Función para compartir factura con diseño profesional por WhatsApp
 function shareInvoiceWhatsApp(code, party, total, type) {
-    let msg = `🧾 *FACTURA DE ${type} - ${code}*\n`;
-    msg += `👤 *Tercero:* ${party}\n`;
-    msg += `📅 *Fecha:* ${new Date().toLocaleDateString()}\n`;
-    msg += `💰 *Monto Total:* ${formatCOP(total)}\n\n`;
-    msg += `_Comprobante emitido desde el Sistema POS Master._`;
+    let items = [], date = new Date().toLocaleDateString();
 
+    // 1. Obtener la venta o compra del estado global
+    if (type === 'VENTA') {
+        const sale = state.sales.find(s => `FAC-V-${s.id.toString().slice(-5)}` === code || s.id.toString() === code);
+        if (sale) {
+            items = sale.items || [];
+            date = sale.date || date;
+        }
+    } else if (type === 'COMPRA') {
+        const payable = state.payables.find(p => p.num === code || `FAC-C-${p.id.toString().slice(-5)}` === code || p.id.toString() === code);
+        if (payable) {
+            items = payable.items || [];
+            date = payable.date || date;
+        }
+    }
+
+    const isSale = (type === 'VENTA');
+    const headerTitle = isSale ? "COMPROBANTE DE VENTA" : "COMPROBANTE DE COMPRA";
+    const labelParty = isSale ? "Cliente" : "Proveedor";
+
+    // 2. Encabezado Elegante y Profesional
+    let msg = `=================================\n`;
+    msg += `🧾 *${headerTitle}*\n`;
+    msg += `=================================\n\n`;
+    
+    // 3. Información del Comprobante
+    msg += `📌 *N° Factura:* \`${code}\` \n`;
+    msg += `📅 *Fecha:* ${date}\n`;
+    msg += `👤 *${labelParty}:* ${party}\n\n`;
+
+    // 4. Detalle de Artículos Estructurado
+    msg += `📋 *RESUMEN DE PRODUCTOS*\n`;
+    msg += `-------------------------------------------------\n`;
+
+    if (items && items.length > 0) {
+        items.forEach((item, index) => {
+            const unitPrice = item.price !== undefined ? item.price : (item.cost || 0);
+            const subtotal = item.qty * unitPrice;
+            
+            msg += `*${index + 1}. ${item.name}*\n`;
+            msg += `   └ *Cant:* ${item.qty}  |  *P.Unit:* ${formatCOP(unitPrice)}\n`;
+            msg += `   └ *Subtotal:* ${formatCOP(subtotal)}\n\n`;
+        });
+        msg += `-------------------------------------------------\n`;
+    } else {
+        msg += `_Sin artículos detallados en el registro_\n`;
+        msg += `-------------------------------------------------\n\n`;
+    }
+
+    // 5. Total Destacado y Pie de Página
+    msg += `💳 *TOTAL A PAGAR:* *${formatCOP(total)}*\n\n`;
+    msg += `=================================\n`;
+    msg += `✨ _¡Gracias por su confianza!_\n`;
+    msg += `🏢 *POS Master* • _Sistema de Gestión_`;
+
+    // 6. Enviar a WhatsApp
     const encoded = encodeURIComponent(msg);
     window.open(`https://api.whatsapp.com/send?text=${encoded}`, '_blank');
 }
@@ -4413,7 +4472,6 @@ function closeEditBillingModal() {
     tempEditBillingItems = [];
 }
 
-// 7. Guardar todos los cambios realizados en la factura
 function saveEditedBillingInvoice() {
     if (!state.cashRegister.isOpen) return alert('La caja está cerrada. No se pueden realizar modificaciones.');
 
@@ -4435,7 +4493,13 @@ function saveEditedBillingInvoice() {
             sale.date = date;
             sale.clientName = party;
             sale.method = method;
-            sale.total = newTotal;
+            sale.total = newTotal; // Actualiza el total de la factura
+            
+            // Si es una venta a crédito, sincronizamos también el saldo pendiente proporcional si aplica
+            if (sale.method.includes('Crédito') && sale.pendingBalance !== undefined) {
+                sale.pendingBalance = newTotal; // O ajusta según los abonos previos
+            }
+
             sale.items = tempEditBillingItems.map(i => ({
                 id: i.id,
                 name: i.name,
@@ -4461,10 +4525,15 @@ function saveEditedBillingInvoice() {
         }
     }
 
+    // ⚡ PASO CLAVE: Recalcular automáticamente las deudas de los clientes con base en las facturas actualizadas
+    recalculateClientDebts();
+
+    // Guardar cambios y sincronizar en Firestore (tiempo real)
     saveData();
     closeEditBillingModal();
     refreshAllUI();
-    alert('Factura y artículos actualizados con éxito.');
+    
+    alert('¡Factura modificada y saldo en Clientes & Crédito actualizado automáticamente!');
 }
 // --- RELOJ EN TIEMPO REAL ---
 function updateLiveClock() {
@@ -4539,6 +4608,38 @@ function openClientWhatsAppFromCart() {
         : `https://api.whatsapp.com/send?text=${encoded}`;
 
     window.open(url, '_blank');
+}
+function recalculateClientDebts() {
+    // 1. Reiniciar la deuda acumulada de todos los clientes a 0
+    state.clients.forEach(c => c.debt = 0);
+
+    // 2. Recorrer todas las ventas registradas
+    state.sales.forEach(sale => {
+        // Verificar si la venta pertenece a un cliente y fue a crédito
+        if (sale.clientName && sale.clientName !== 'Cliente Ocasional') {
+            const isCredit = sale.method === 'Crédito' || sale.method.startsWith('Crédito') || (sale.pendingBalance !== undefined && sale.pendingBalance > 0);
+            
+            if (isCredit) {
+                // Buscar si el cliente existe en la lista
+                let client = state.clients.find(c => c.name.toLowerCase() === sale.clientName.toLowerCase());
+                
+                // Determinar el monto pendiente de esta factura específica
+                const amountToAdd = sale.pendingBalance !== undefined ? sale.pendingBalance : sale.total;
+
+                if (client) {
+                    client.debt = (client.debt || 0) + amountToAdd;
+                } else {
+                    // Si el cliente no estaba registrado formalmente pero tiene una venta a crédito, lo creamos
+                    state.clients.push({
+                        id: Date.now() + Math.random(),
+                        name: sale.clientName,
+                        phone: 'Sin Teléfono',
+                        debt: amountToAdd
+                    });
+                }
+            }
+        }
+    });
 }
  </script>
 <!-- TICKET TÉRMICO OCULTO PARA IMPRESIÓN 80MM -->
