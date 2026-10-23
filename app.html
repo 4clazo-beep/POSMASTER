@@ -22,7 +22,6 @@
 
 };
 
-
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
   // --- ESTADO GLOBAL DE LA APLICACIÓN ---
@@ -361,31 +360,247 @@ let state = {
         <div id="slide-2" class="bg-slide"></div>
     </div>
 
-    <!-- PANTALLA DE BLOQUEO DE LICENCIA -->
-    <div id="license-screen" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 md:p-8 shadow-2xl space-y-6 text-center">
-            <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-2xl">
-                <i class="fa-solid fa-key"></i>
-            </div>
-            <div>
-                <h2 class="text-2xl font-bold text-slate-800">Activa tu Licencia</h2>
-                <p class="text-sm text-slate-500 mt-1">Ingresa el número de licencia mensual para acceder al sistema.</p>
-            </div>
-            
-            <div class="space-y-4">
-                <div>
-                    <input type="text" id="license-input" placeholder="Ej: LIC-2026-10-31-KEY99" class="w-full px-4 py-3 border border-slate-300 rounded-xl font-mono text-center text-slate-800 tracking-wider focus:outline-none focus:ring-2 focus:ring-emerald-500 uppercase">
-                    <p id="license-error" class="text-xs text-rose-500 mt-2 hidden font-semibold"></p>
-                </div>
-                <button onclick="activateLicense()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-emerald-600/20">
-                    Validar Licencia
-                </button>
-            </div>
-            
-            <p class="text-xs text-slate-400 border-t pt-4">Soporte Técnico & Renovaciones: WhatsApp del Administrador</p>
-        </div>
+   <!-- PANTALLA DE BLOQUEO DE LICENCIA CON MÁXIMA CLARIDAD Y NITIDEZ -->
+<div id="license-screen" class="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-hidden">
+    <!-- Contenedor de imágenes de fondo ultra claras sin filtros oscuros ni velos -->
+    <div id="license-bg-slideshow" class="absolute inset-0 z-0 pointer-events-none">
+        <div id="license-slide-0" class="absolute inset-0 bg-cover bg-center transition-all duration-1000 transform scale-105 opacity-100 brightness-100 contrast-100"></div>
+        <div id="license-slide-1" class="absolute inset-0 bg-cover bg-center transition-all duration-1000 transform scale-100 opacity-0 brightness-100 contrast-100"></div>
     </div>
 
+    <!-- Capa de fondo totalmente transparente (sin opacidad blanca ni velo) -->
+    <div class="absolute inset-0 bg-transparent z-10"></div>
+
+    <!-- Contenedor del Formulario de Licencia con Cristal Esmerilado Luminoso -->
+    <div class="relative bg-white/90 dark:bg-slate-900/90 rounded-3xl max-w-md w-full p-6 md:p-8 shadow-2xl space-y-6 text-center border border-white/50 z-20 backdrop-blur-md">
+        <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-2xl shadow-inner">
+            <i class="fa-solid fa-key"></i>
+        </div>
+        <div>
+            <h2 class="text-2xl font-bold text-slate-800 dark:text-white">Activa tu Licencia</h2>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Ingresa el número de licencia mensual para acceder al sistema.</p>
+        </div>
+        
+        <div class="space-y-4">
+            <div>
+                <input type="text" id="license-input" placeholder="Ej: LIC-2026-10-31-KEY99" class="w-full px-4 py-3 border border-slate-300 rounded-xl font-mono text-center text-slate-800 tracking-wider focus:outline-none focus:ring-2 focus:ring-emerald-500 uppercase bg-white/80">
+                <p id="license-error" class="text-xs text-rose-500 mt-2 hidden font-semibold"></p>
+            </div>
+            <button onclick="activateLicense()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-emerald-600/30">
+                Validar Licencia
+            </button>
+        </div>
+        
+        <p class="text-xs text-slate-400 border-t pt-4">Soporte Técnico & Renovaciones: WhatsApp del Administrador</p>
+    </div>
+</div>
+
+<!-- SCRIPT DE CARRUSEL CON EFECTO DE DESVANECIMIENTO LENTO Y PROFESIONAL -->
+<!-- SCRIPT DE CARRUSEL CON 100 IMÁGENES ULTRA PROFESIONALES EN HD -->
+<script>
+   
+    document.addEventListener("DOMContentLoaded", () => {
+        // Colección de 100 imágenes ultra profesionales en alta resolución (Unsplash HD)
+        const slides = [
+            // --- PAISAJES NATURALES Y NATURALEZA (25 IMÁGENES) ---
+            'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1511884642898-4c92249e20b6?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1426604966848-d7adac402bff?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1433086966358-54859d0ed716?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1439853949127-fa647821eba0?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1418065460487-3e41a6c84dc5?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1510784722466-be2aa9c42fa6?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1505765050516-f72dcac9c60e?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1434725039720-aaad6dd32dfe?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1498855926480-d98e83099315?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1506104431526-90e668c1775e?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?auto=format&fit=crop&w=1920&q=95',
+
+            // --- PAISAJES URBANOS Y ARQUITECTURA CIUDAD (25 IMÁGENES) ---
+            'https://images.unsplash.com/photo-1477959858617-67f30ac4ce71?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1514565131-fce0801e5785?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1502899576159-f224dc2349fa?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1444723121867-7a241cacace9?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1470004914212-05527e49370b?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1496568816309-51a7c20e3821?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1506146332389-18140dc7b2fb?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1518391846015-55a9cc003b25?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1477346611705-65d1883cee1e?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1486325212027-8081e485255e?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1508873696983-2df515122519?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1465447142348-e9952c393450?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1492666673288-3c4b4576ad9a?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1499092346589-b9b6be3e94b2?auto=format&fit=crop&w=1920&q=95',
+
+            // --- NEGOCIOS, OFICINAS Y EJECUTIVOS (25 IMÁGENES) ---
+            'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1542744801-30d009228416?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1560179707-f14e90ef3623?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=1920&q=95',
+
+            "assets/img/animals/animal-01.jpg",
+    "assets/img/animals/animal-02.jpg",
+    "assets/img/animals/animal-03.jpg",
+    "assets/img/animals/animal-04.jpg",
+    "assets/img/animals/animal-05.jpg",
+    "assets/img/animals/animal-06.jpg",
+    "assets/img/animals/animal-07.jpg",
+    "assets/img/animals/animal-08.jpg",
+    "assets/img/animals/animal-09.jpg",
+    "assets/img/animals/animal-10.jpg",
+    "assets/img/animals/animal-11.jpg",
+    "assets/img/animals/animal-12.jpg",
+    "assets/img/animals/animal-13.jpg",
+    "assets/img/animals/animal-14.jpg",
+    "assets/img/animals/animal-15.jpg",
+    "assets/img/animals/animal-16.jpg",
+    "assets/img/animals/animal-17.jpg",
+    "assets/img/animals/animal-18.jpg",
+    "assets/img/animals/animal-19.jpg",
+    "assets/img/animals/animal-20.jpg",
+    "assets/img/animals/animal-21.jpg",
+    "assets/img/animals/animal-22.jpg",
+    "assets/img/animals/animal-23.jpg",
+    "assets/img/animals/animal-24.jpg",
+    "assets/img/animals/animal-25.jpg",
+    "assets/img/animals/animal-26.jpg",
+    "assets/img/animals/animal-27.jpg",
+    "assets/img/animals/animal-28.jpg",
+    "assets/img/animals/animal-29.jpg",
+    "assets/img/animals/animal-30.jpg",
+    "assets/img/animals/animal-31.jpg",
+    "assets/img/animals/animal-32.jpg",
+    "assets/img/animals/animal-33.jpg",
+    "assets/img/animals/animal-34.jpg",
+    "assets/img/animals/animal-35.jpg",
+    "assets/img/animals/animal-36.jpg",
+    "assets/img/animals/animal-37.jpg",
+    "assets/img/animals/animal-38.jpg",
+    "assets/img/animals/animal-39.jpg",
+    "assets/img/animals/animal-40.jpg",
+    "assets/img/animals/animal-41.jpg",
+    "assets/img/animals/animal-42.jpg",
+    "assets/img/animals/animal-43.jpg",
+    "assets/img/animals/animal-44.jpg",
+    "assets/img/animals/animal-45.jpg",
+    "assets/img/animals/animal-46.jpg",
+    "assets/img/animals/animal-47.jpg",
+    "assets/img/animals/animal-48.jpg",
+    "assets/img/animals/animal-49.jpg",
+    "assets/img/animals/animal-50.jpg"  // --- TECNOLOGÍA, POS, COMERCIO Y FINANZAS (25 IMÁGENES) ---
+            , 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1556742208-999815fca738?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1556742111-a30eb076da2d?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1553729459-efe14ef6055d?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1580828343064-fde4fc206bc6?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1556741533-6e6a62bd8b49?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1534452203293-494d7ddbf7e0?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1512428559087-560fa5ceab42?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1556740749-887f6717d7e4?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1501167786227-4cba60f6d58f?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1556742049-0a670f4a4587?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1563013544-824ae1b704d3?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1559526324-593bc073d938?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1504639725590-34d0984388bd?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1535320903710-d993d3d77d29?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&w=1920&q=95',
+            'https://images.unsplash.com/photo-1559526323-cb2f2fe2591b?auto=format&fit=crop&w=1920&q=95'
+            
+        ];
+        
+        let currentSlideIndex = 0;
+        let activeLayer = 0;
+
+        const slide0 = document.getElementById('license-slide-0');
+        const slide1 = document.getElementById('license-slide-1');
+
+        if (slide0 && slide1) {
+            // Configuración de capas nítidas y limpias sin filtros de opacidad opacos
+            slide0.className = "absolute inset-0 bg-cover bg-center transition-all duration-[3500ms] transform scale-105 opacity-100 brightness-100 contrast-100";
+            slide1.className = "absolute inset-0 bg-cover bg-center transition-all duration-[3500ms] transform scale-100 opacity-0 brightness-100 contrast-100";
+
+            // Cargar la primera imagen inicialmente
+            slide0.style.backgroundImage = `url('${slides[0]}')`;
+
+            setInterval(() => {
+                const nextSlideIndex = (currentSlideIndex + 1) % slides.length;
+                const nextImageUrl = slides[nextSlideIndex];
+
+                if (activeLayer === 0) {
+                    slide1.style.backgroundImage = `url('${nextImageUrl}')`;
+                    slide1.classList.remove('opacity-0', 'scale-100');
+                    slide1.classList.add('opacity-100', 'scale-105');
+
+                    slide0.classList.remove('opacity-100', 'scale-105');
+                    slide0.classList.add('opacity-0', 'scale-100');
+                    activeLayer = 1;
+                } else {
+                    slide0.style.backgroundImage = `url('${nextImageUrl}')`;
+                    slide0.classList.remove('opacity-0', 'scale-100');
+                    slide0.classList.add('opacity-100', 'scale-105');
+
+                    slide1.classList.remove('opacity-100', 'scale-105');
+                    slide1.classList.add('opacity-0', 'scale-100');
+                    activeLayer = 0;
+                }
+
+                currentSlideIndex = nextSlideIndex;
+            }, 10000); // Cambia cada 10 segundos con fundido suave de 3.5s
+        }
+    });
+</script>
     <!-- CONTENEDOR PRINCIPAL DEL SISTEMA POS -->
     <div id="app-container" class="flex h-screen overflow-hidden hidden">
         <!-- Sidebar de Navegación (Solo visible en Computadores / Laptop) -->
@@ -574,20 +789,23 @@ let state = {
 
             <!-- Contenedor de Vistas -->
             <div class="p-3 md:p-6 flex-1">
-                <!-- VISTA 9: FACTURACIÓN GENERAL -->
+               <!-- VISTA 9: FACTURACIÓN GENERAL -->
 <section id="view-billing" class="hidden space-y-4 md:space-y-6">
-    <!-- FILTROS Y BÚSQUEDA -->
-    <div class="bg-white rounded-2xl shadow-sm p-4 md:p-6 flex flex-col md:flex-row justify-between items-center gap-3 border border-slate-100">
-        <div class="flex items-center gap-2 w-full md:w-auto">
-            <input type="text" id="billing-search" oninput="renderBillingModule()" placeholder="Buscar por cliente, proveedor o #..." class="w-full md:w-80 px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+    <div class="bg-white rounded-2xl shadow-sm p-4 md:p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+        <div>
+            <h2 class="text-base md:text-lg font-bold text-slate-800">Módulo de Facturación General</h2>
+            <p class="text-xs text-slate-500">Repositorio unificado de ventas, compras y abonos.</p>
+        </div>
+        <div class="flex items-center gap-3 w-full md:w-auto">
             <select id="billing-type-filter" onchange="renderBillingModule()" class="px-3 py-2 border border-slate-200 rounded-xl text-xs md:text-sm bg-slate-50 font-medium">
-                <option value="ALL">Todas las Facturas</option>
+                <option value="ALL">Todas las Facturas / Movimientos</option>
                 <option value="VENTA">Solo Ventas</option>
                 <option value="COMPRA">Solo Compras / Proveedores</option>
+                <option value="ABONO">Solo Abonos (Clientes y Proveedores)</option>
             </select>
-        </div>
-        <div class="text-xs text-slate-500 font-semibold">
-            Total Facturas: <span id="billing-count-badge" class="text-emerald-600 font-bold">0</span>
+            <div class="text-xs text-slate-500 font-semibold whitespace-nowrap">
+                Total: <span id="billing-count-badge" class="text-emerald-600 font-bold">0</span>
+            </div>
         </div>
     </div>
 
@@ -788,9 +1006,8 @@ let state = {
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6" id="accounts-cards-grid"></div>
                 </section>
 
-               <!-- VISTA 5: CUENTAS POR PAGAR & PROVEEDORES -->
+          <!-- VISTA 5: CUENTAS POR PAGAR & PROVEEDORES -->
 <section id="view-payables" class="hidden space-y-4 md:space-y-6">
-    <!-- NUEVO: CONTENEDOR DE TARJETAS DE PROVEEDORES -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="provider-cards-grid"></div>
 
     <div class="bg-white rounded-2xl shadow-sm p-4 md:p-6 flex flex-col md:flex-row justify-between items-center gap-3">
@@ -804,49 +1021,58 @@ let state = {
             </button>
         </div>
     </div>
-    <!-- ... Resto de la tabla de facturas ... -->
-                    <div class="bg-white rounded-2xl shadow-sm overflow-x-auto">
-                        <table class="w-full text-left border-collapse min-w-[600px]">
-                            <thead>
-                                <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 text-xs font-bold uppercase">
-                                    <th class="p-3">Factura #</th>
-                                    <th class="p-3">Proveedor</th>
-                                    <th class="p-3">Fecha</th>
-                                    <th class="p-3">Total</th>
-                                    <th class="p-3">Saldo Pendiente</th>
-                                    <th class="p-3 text-right">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="payables-table-body" class="divide-y divide-slate-100 text-xs md:text-sm text-slate-700"></tbody>
-                        </table>
-                    </div>
-                </section>
+    
+    <div class="bg-white rounded-2xl shadow-sm overflow-x-auto">
+        <table class="w-full text-left border-collapse min-w-[600px]">
+            <thead>
+                <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 text-xs font-bold uppercase">
+                    <th class="p-3">Factura #</th>
+                    <th class="p-3">Proveedor</th>
+                    <th class="p-3">Fecha</th>
+                    <th class="p-3">Total</th>
+                    <th class="p-3">Saldo Pendiente</th>
+                    <th class="p-3 text-right">Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="payables-table-body" class="divide-y divide-slate-100 text-xs md:text-sm text-slate-700"></tbody>
+        </table>
+    </div>
+</section>
+            <!-- VISTA 6: CLIENTES & CRÉDITO -->
+<section id="view-clients" class="hidden space-y-4 md:space-y-6">
+    <div class="bg-white rounded-2xl shadow-sm p-4 md:p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+        <div>
+            <h2 class="text-base md:text-lg font-bold text-slate-800">Cartera de Clientes & Créditos</h2>
+            <p class="text-xs text-slate-500">Administra deudas acumuladas, saldos y recibe abonos.</p>
+        </div>
+        <button onclick="openClientModal()" class="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-xl text-xs md:text-sm transition">
+            <i class="fa-solid fa-user-plus mr-1.5"></i> Registrar Cliente
+        </button>
+    </div>
 
-                <!-- VISTA 6: CLIENTES & CRÉDITO -->
-                <section id="view-clients" class="hidden space-y-4 md:space-y-6">
-                    <div class="bg-white rounded-2xl shadow-sm p-4 md:p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-                        <div>
-                            <h2 class="text-base md:text-lg font-bold text-slate-800">Cartera de Clientes & Créditos</h2>
-                            <p class="text-xs text-slate-500">Administra deudas acumuladas, saldos y recibe abonos.</p>
-                        </div>
-                        <button onclick="openClientModal()" class="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-xl text-xs md:text-sm transition">
-                            <i class="fa-solid fa-user-plus mr-1.5"></i> Registrar Cliente
-                        </button>
-                    </div>
-                    <div class="bg-white rounded-2xl shadow-sm overflow-x-auto">
-                        <table class="w-full text-left border-collapse min-w-[500px]">
-                            <thead>
-                                <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 text-xs font-bold uppercase">
-                                    <th class="p-3 md:p-4">Cliente</th>
-                                    <th class="p-3 md:p-4">Teléfono</th>
-                                    <th class="p-3 md:p-4">Deuda Acumulada</th>
-                                    <th class="p-3 md:p-4 text-right">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="clients-table-body" class="divide-y divide-slate-100 text-xs md:text-sm text-slate-700"></tbody>
-                        </table>
-                    </div>
-                </section>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="bg-white p-4 md:p-5 rounded-2xl shadow-sm border-l-4 border-purple-600 bg-purple-50/20 sm:col-span-1">
+            <p class="text-[10px] md:text-xs text-purple-700 font-bold uppercase flex items-center gap-1.5">
+                <i class="fa-solid fa-hand-holding-dollar text-sm"></i> Total Cartera por Cobrar
+            </p>
+            <h3 id="clients-total-cartera-badge" class="text-lg md:text-2xl font-bold text-purple-900 mt-1">$0.000</h3>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm overflow-x-auto">
+        <table class="w-full text-left border-collapse min-w-[500px]">
+            <thead>
+                <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 text-xs font-bold uppercase">
+                    <th class="p-3 md:p-4">Cliente</th>
+                    <th class="p-3 md:p-4">Teléfono</th>
+                    <th class="p-3 md:p-4">Deuda Acumulada</th>
+                    <th class="p-3 md:p-4 text-right">Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="clients-table-body" class="divide-y divide-slate-100 text-xs md:text-sm text-slate-700"></tbody>
+        </table>
+    </div>
+</section>
 
                <!-- VISTA 7: ESTADÍSTICAS PROFESIONALES -->
 <section id="view-statistics" class="hidden space-y-4 md:space-y-6">
@@ -933,7 +1159,7 @@ let state = {
         <div class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
-                    <i class="fa-solid fa-ranking-star text-indigo-600"></i> Top 5 Artículos Más Vendidos
+                    <i class="fa-solid fa-ranking-star text-indigo-600"></i> TOP 5 MAYOR ACTIVIDAD 
                 </h3>
                 <span class="text-[11px] bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-lg font-semibold">Volumen</span>
             </div>
@@ -1270,26 +1496,35 @@ let state = {
 
     <!-- SCRIPT DE FUNCIONALIDAD Y VALIDACIÓN DE LICENCIA -->
     <script>
-        function printThermalTicket() {
+   function printThermalTicket() {
     if (state.cart.length === 0) return alert('El carrito está vacío para imprimir tiquete.');
 
     const clientName = document.getElementById('cart-client-name').value.trim() || 'Cliente Ocasional';
     const total = state.cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+    const invoiceRandomNum = Math.floor(10000 + Math.random() * 90000);
 
+    document.getElementById('ticket-invoice-num').innerText = `FACTURA DE VENTA: FAC-${invoiceRandomNum}`;
     document.getElementById('ticket-date').innerText = `Fecha: ${new Date().toLocaleString()}`;
     document.getElementById('ticket-client').innerText = `Cliente: ${clientName}`;
+    document.getElementById('ticket-payment-method').innerText = `Terminal: POS Principal`;
     
     const tbody = document.getElementById('ticket-items-body');
     tbody.innerHTML = '';
     state.cart.forEach(item => {
         tbody.innerHTML += `
             <tr>
-                <td style="padding: 2px 0;">${item.qty}x ${item.name}<br><span style="font-size: 9px;">$${Number(item.price).toLocaleString('es-CO')} c/u</span></td>
-                <td style="text-align: right; vertical-align: top; padding: 2px 0;">$${Number(item.price * item.qty).toLocaleString('es-CO')}</td>
+                <td style="padding: 3px 0; line-height: 1.2;">
+                    <b>${item.qty}x</b> ${item.name}<br>
+                    <span style="font-size: 9px; color: #444;">P/U: $${Number(item.price).toLocaleString('es-CO')}</span>
+                </td>
+                <td style="text-align: right; vertical-align: top; padding: 3px 0; font-weight: bold;">
+                    $${Number(item.price * item.qty).toLocaleString('es-CO')}
+                </td>
             </tr>
         `;
     });
 
+    document.getElementById('ticket-subtotal').innerText = formatCOP(total);
     document.getElementById('ticket-total').innerText = formatCOP(total);
 
     const ticketEl = document.getElementById('thermal-ticket');
@@ -1766,10 +2001,18 @@ async function saveData() {
 
         document.getElementById('current-date').innerText = new Date().toLocaleDateString();
 
-      function switchTab(tab) {
-    // 🔒 PROTECCIÓN DE MÓDULOS CON PIN 1234 (Inventarios y Facturación)
-    if (tab === 'inventory' || tab === 'billing') {
-        const moduleName = tab === 'inventory' ? 'Inventarios' : 'Facturación';
+function switchTab(tab) {
+    // 🔒 PROTECCIÓN DE MÓDULOS CON PIN 1234 (Incluye Estadísticas y Reportes)
+    if (tab === 'inventory' || tab === 'billing' || tab === 'clients' || tab === 'payables' || tab === 'accounts' || tab === 'statistics' || tab === 'reports') {
+        let moduleName = 'este módulo';
+        if (tab === 'inventory') moduleName = 'Inventarios';
+        if (tab === 'billing') moduleName = 'Facturación';
+        if (tab === 'clients') moduleName = 'Clientes & Crédito';
+        if (tab === 'payables') moduleName = 'Cuentas por Pagar';
+        if (tab === 'accounts') moduleName = 'Bancos & Efectivo';
+        if (tab === 'statistics') moduleName = 'Estadísticas';
+        if (tab === 'reports') moduleName = 'Reportes';
+
         const pin = prompt(`Ingrese el código PIN de seguridad de 4 dígitos para acceder a ${moduleName}:`);
         if (pin === null) return; // Si cancela, no hace nada
         if (pin.trim() !== "1234") {
@@ -1777,64 +2020,64 @@ async function saveData() {
             return;
         }
     }
-           const tabs = ['pos', 'inventory', 'cash', 'accounts', 'payables', 'clients', 'statistics', 'reports', 'billing'];
-            tabs.forEach(t => {
-                const view = document.getElementById(`view-${t}`);
-                const btn = document.getElementById(`btn-${t}`);
-                const mobBtn = document.getElementById(`mob-btn-${t}`);
 
-                if (view) view.classList.add('hidden');
-                if (btn) {
-                    btn.classList.remove('bg-emerald-600', 'text-white');
-                    btn.classList.add('hover:bg-slate-800');
-                }
-                if (mobBtn) {
-                    mobBtn.classList.remove('text-emerald-400');
-                    mobBtn.classList.add('text-slate-400');
-                }
-            });
+    const tabs = ['pos', 'inventory', 'cash', 'accounts', 'payables', 'clients', 'statistics', 'reports', 'billing'];
+    tabs.forEach(t => {
+        const view = document.getElementById(`view-${t}`);
+        const btn = document.getElementById(`btn-${t}`);
+        const mobBtn = document.getElementById(`mob-btn-${t}`);
 
-            const activeView = document.getElementById(`view-${tab}`);
-            const activeBtn = document.getElementById(`btn-${tab}`);
-            const activeMobBtn = document.getElementById(`mob-btn-${tab}`);
-
-            if (activeView) activeView.classList.remove('hidden');
-            if (activeBtn) {
-                activeBtn.classList.add('bg-emerald-600', 'text-white');
-                activeBtn.classList.remove('hover:bg-slate-800');
-            }
-            if (activeMobBtn) {
-                activeMobBtn.classList.add('text-emerald-400');
-                activeMobBtn.classList.remove('text-slate-400');
-            }
-            
-           const titles = { 
-    pos: 'Terminal de Venta (POS)', 
-    inventory: 'Gestión de Inventario', 
-    cash: 'Control de Caja', 
-    accounts: 'Bancos y Efectivo',
-    payables: 'Cuentas por Pagar',
-    clients: 'Clientes y Créditos',
-    statistics: 'Estadísticas Profesionales',
-    reports: 'Reportes y Estadísticas',
-    billing: 'Módulo de Facturación General'
-};
-            document.getElementById('page-title').innerText = titles[tab] || '';
-            
-            updateModuleInfoBanner(tab);
-
-            if (tab === 'cash') renderCashControl();
-            if (tab === 'accounts') renderAccounts();
-            if (tab === 'payables') renderPayables();
-            if (tab === 'payables') {
-    renderPayables();
-    renderProviderCards(); // <--- AÑADE ESTA LÍNEA AQUÍ
-}
-            if (tab === 'statistics') renderStatistics();
-            if (tab === 'reports') renderReports();
-            if (tab === 'billing') renderBillingModule();
+        if (view) view.classList.add('hidden');
+        if (btn) {
+            btn.classList.remove('bg-emerald-600', 'text-white');
+            btn.classList.add('hover:bg-slate-800');
         }
+        if (mobBtn) {
+            mobBtn.classList.remove('text-emerald-400');
+            mobBtn.classList.add('text-slate-400');
+        }
+    });
 
+    const activeView = document.getElementById(`view-${tab}`);
+    const activeBtn = document.getElementById(`btn-${tab}`);
+    const activeMobBtn = document.getElementById(`mob-btn-${tab}`);
+
+    if (activeView) activeView.classList.remove('hidden');
+    if (activeBtn) {
+        activeBtn.classList.add('bg-emerald-600', 'text-white');
+        activeBtn.classList.remove('hover:bg-slate-800');
+    }
+    if (activeMobBtn) {
+        activeMobBtn.classList.add('text-emerald-400');
+        activeMobBtn.classList.remove('text-slate-400');
+    }
+    
+    const titles = { 
+        pos: 'Terminal de Venta (POS)', 
+        inventory: 'Gestión de Inventario', 
+        cash: 'Control de Caja', 
+        accounts: 'Bancos y Efectivo',
+        payables: 'Cuentas por Pagar',
+        clients: 'Clientes y Créditos',
+        statistics: 'Estadísticas Profesionales',
+        reports: 'Reportes y Estadísticas',
+        billing: 'Módulo de Facturación General'
+    };
+    document.getElementById('page-title').innerText = titles[tab] || '';
+    
+    updateModuleInfoBanner(tab);
+
+    if (tab === 'cash') renderCashControl();
+    if (tab === 'accounts') renderAccounts();
+    if (tab === 'payables') {
+        renderPayables();
+        renderProviderCards();
+    }
+    if (tab === 'statistics') renderStatistics();
+    if (tab === 'reports') renderReports();
+    if (tab === 'billing') renderBillingModule();
+    if (tab === 'clients') renderClients();
+}
         function updateClientsDatalist() {
             const datalist = document.getElementById('clients-datalist');
             if (!datalist) return;
@@ -1855,23 +2098,39 @@ function renderBillingModule() {
 
     let allInvoices = [];
 
-    // Facturas de Ventas
+    // 1. Procesar Ventas y Abonos de Clientes desde state.sales
     state.sales.forEach(s => {
-        allInvoices.push({
-            id: s.id,
-            rawId: s.id,
-            code: `FAC-V-${s.id.toString().slice(-5)}`,
-            type: 'VENTA',
-            date: s.date,
-            party: s.clientName || 'Cliente Ocasional',
-            method: s.method,
-            status: 'Completada',
-            total: s.total,
-            items: s.items || []
-        });
+        const isAbono = s.method && (s.method.includes('Abono') || s.method === 'Abono a Crédito');
+        if (!isAbono) {
+            allInvoices.push({
+                id: s.id,
+                rawId: s.id,
+                code: `FAC-V-${s.id.toString().slice(-5)}`,
+                type: 'VENTA',
+                date: s.date,
+                party: s.clientName || 'Cliente Ocasional',
+                method: s.method,
+                status: 'Completada',
+                total: s.total,
+                items: s.items || []
+            });
+        } else {
+            allInvoices.push({
+                id: s.id,
+                rawId: s.id,
+                code: `ABO-V-${s.id.toString().slice(-5)}`,
+                type: 'ABONO',
+                date: s.date,
+                party: s.clientName || 'Cliente',
+                method: s.method,
+                status: 'Registrado',
+                total: s.total,
+                items: s.items || []
+            });
+        }
     });
 
-    // Facturas de Compras / Proveedores
+    // 2. Procesar Compras y Abonos a Proveedores desde state.payables
     state.payables.forEach(p => {
         allInvoices.push({
             id: p.id,
@@ -1885,9 +2144,26 @@ function renderBillingModule() {
             total: p.total,
             items: p.items || []
         });
+
+        // Incluir abonos realizados a este proveedor
+        const paymentList = p.payments || p.paymentsHistory || [];
+        paymentList.forEach((pay, idx) => {
+            allInvoices.push({
+                id: `${p.id}_pay_${idx}`,
+                rawId: p.id,
+                code: `ABO-C-${p.id.toString().slice(-5)}-${idx}`,
+                type: 'ABONO',
+                date: pay.date,
+                party: p.providerName || 'Proveedor',
+                method: `Abono a Compra (${pay.account || 'Caja/Banco'})`,
+                status: 'Pagado',
+                total: pay.amount,
+                items: p.items || []
+            });
+        });
     });
 
-    // Filtros
+    // 3. Aplicar Filtros de Búsqueda y Tipo
     let filtered = allInvoices.filter(inv => {
         const matchesType = (typeFilter === 'ALL') || (inv.type === typeFilter);
         const matchesSearch = inv.code.toLowerCase().includes(search) || 
@@ -1899,15 +2175,21 @@ function renderBillingModule() {
     if (badge) badge.innerText = filtered.length;
 
     if (filtered.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400 font-medium">No se encontraron facturas registradas.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400 font-medium">No se encontraron registros en el módulo de facturación.</td></tr>';
         return;
     }
 
+    // 4. Renderizar Filas en la Tabla
     filtered.forEach(inv => {
         const isVenta = inv.type === 'VENTA';
-        const typeBadge = isVenta 
-            ? '<span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-md font-bold text-[10px]">VENTA</span>'
-            : '<span class="px-2 py-0.5 bg-blue-100 text-blue-800 rounded-md font-bold text-[10px]">COMPRA</span>';
+        const isCompra = inv.type === 'COMPRA';
+        
+        let typeBadge = '<span class="px-2 py-0.5 bg-purple-100 text-purple-800 rounded-md font-bold text-[10px]">ABONO</span>';
+        if (isVenta) {
+            typeBadge = '<span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-md font-bold text-[10px]">VENTA</span>';
+        } else if (isCompra) {
+            typeBadge = '<span class="px-2 py-0.5 bg-blue-100 text-blue-800 rounded-md font-bold text-[10px]">COMPRA</span>';
+        }
 
         tbody.innerHTML += `
             <tr class="hover:bg-slate-50 transition">
@@ -1920,31 +2202,28 @@ function renderBillingModule() {
                 <td class="p-3 md:p-4 text-slate-500">${inv.date}</td>
                 <td class="p-3 md:p-4 font-semibold text-slate-800">${inv.party}</td>
                 <td class="p-3 md:p-4">
-                    <span class="text-xs px-2 py-1 rounded-lg font-medium ${isVenta ? 'bg-slate-100 text-slate-700' : 'bg-amber-50 text-amber-800 border border-amber-200'}">
+                    <span class="text-xs px-2 py-1 rounded-lg font-medium ${isVenta ? 'bg-slate-100 text-slate-700' : isCompra ? 'bg-amber-50 text-amber-800 border border-amber-200' : 'bg-purple-50 text-purple-800 border border-purple-200'}">
                         ${inv.method} (${inv.status})
                     </span>
                 </td>
                 <td class="p-3 md:p-4 font-bold text-right text-slate-900">${formatCOP(inv.total)}</td>
                 <td class="p-3 md:p-4 text-center space-x-1">
-                    <button onclick="openEditBillingModal(${inv.rawId}, '${inv.type}')" class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold transition" title="Editar Factura">
-                        <i class="fa-solid fa-pen"></i>
-                    </button>
+                    ${inv.type !== 'ABONO' ? `
+                        <button onclick="openEditBillingModal(${inv.rawId}, '${inv.type}')" class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold transition" title="Editar">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    ` : ''}
                     <button onclick="shareInvoiceWhatsApp('${inv.code}', '${inv.party}', ${inv.total}, '${inv.type}')" class="p-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-lg text-xs font-bold transition" title="Compartir WhatsApp">
                         <i class="fa-brands fa-whatsapp text-sm"></i>
-                    </button>
-                    <button onclick="deleteBillingInvoice(${inv.rawId}, '${inv.type}')" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-xs font-bold transition" title="Eliminar Factura">
-                        <i class="fa-solid fa-trash"></i>
                     </button>
                 </td>
             </tr>
         `;
     });
 }
-// Función para compartir factura con diseño profesional por WhatsApp
 function shareInvoiceWhatsApp(code, party, total, type) {
     let items = [], date = new Date().toLocaleDateString();
 
-    // 1. Obtener la venta o compra del estado global
     if (type === 'VENTA') {
         const sale = state.sales.find(s => `FAC-V-${s.id.toString().slice(-5)}` === code || s.id.toString() === code);
         if (sale) {
@@ -1957,23 +2236,60 @@ function shareInvoiceWhatsApp(code, party, total, type) {
             items = payable.items || [];
             date = payable.date || date;
         }
+    } else if (type === 'ABONO') {
+        const sale = state.sales.find(s => `ABO-V-${s.id.toString().slice(-5)}` === code || s.id.toString() === code);
+        if (sale) {
+            items = sale.items || [];
+            date = sale.date || date;
+        }
+
+        let msg = `=====================================\n`;
+        msg += `       *COMPROBANTE DE ABONO*\n`;
+        msg += `=====================================\n\n`;
+        msg += `📌 *N° Comprobante:* \`${code}\`\n`;
+        msg += `📅 *Fecha / Hora:* ${date}\n`;
+        msg += `👤 *Cliente:* ${party}\n\n`;
+
+        msg += `📋 *DETALLE DEL MOVIMIENTO*\n`;
+        msg += `-------------------------------------------------\n`;
+        if (items && items.length > 0) {
+            items.forEach((item, index) => {
+                const subtotal = item.price * item.qty;
+                msg += `*${index + 1}. ${item.name}*\n`;
+                msg += `   └ *Monto:* ${formatCOP(subtotal)}\n\n`;
+            });
+        } else {
+            msg += `• Abono registrado a cuenta de crédito\n\n`;
+        }
+        msg += `-------------------------------------------------\n`;
+        msg += `💵 *MONTO ABONADO:* *${formatCOP(total)}*\n\n`;
+
+        const client = state.clients.find(c => c.name.toLowerCase() === party.toLowerCase());
+        if (client) {
+            msg += `📊 *ESTADO DE CARTERA ACTUAL*\n`;
+            msg += `• Saldo Pendiente Actual: *${formatCOP(client.debt || 0)}*\n\n`;
+        }
+
+        msg += `=====================================\n`;
+        msg += `🙏 *¡Muchas gracias por su abono y puntualidad!*\n`;
+        msg += `🏢 *POS Master* • _Sistema de Gestión_`;
+
+        const encoded = encodeURIComponent(msg);
+        window.open(`https://api.whatsapp.com/send?text=${encoded}`, '_blank');
+        return;
     }
 
     const isSale = (type === 'VENTA');
     const headerTitle = isSale ? "COMPROBANTE DE VENTA" : "COMPROBANTE DE COMPRA";
     const labelParty = isSale ? "Cliente" : "Proveedor";
 
-    // 2. Encabezado Elegante y Profesional
     let msg = `=================================\n`;
     msg += `🧾 *${headerTitle}*\n`;
     msg += `=================================\n\n`;
-    
-    // 3. Información del Comprobante
     msg += `📌 *N° Factura:* \`${code}\` \n`;
     msg += `📅 *Fecha:* ${date}\n`;
     msg += `👤 *${labelParty}:* ${party}\n\n`;
 
-    // 4. Detalle de Artículos Estructurado
     msg += `📋 *RESUMEN DE PRODUCTOS*\n`;
     msg += `-------------------------------------------------\n`;
 
@@ -1992,15 +2308,44 @@ function shareInvoiceWhatsApp(code, party, total, type) {
         msg += `-------------------------------------------------\n\n`;
     }
 
-    // 5. Total Destacado y Pie de Página
     msg += `💳 *TOTAL A PAGAR:* *${formatCOP(total)}*\n\n`;
     msg += `=================================\n`;
     msg += `✨ _¡Gracias por su confianza!_\n`;
     msg += `🏢 *POS Master* • _Sistema de Gestión_`;
 
-    // 6. Enviar a WhatsApp
     const encoded = encodeURIComponent(msg);
     window.open(`https://api.whatsapp.com/send?text=${encoded}`, '_blank');
+}
+
+function sendPaymentReceiptWhatsApp(client, amountPaid, previousDebt, remainingDebt, accountName) {
+    const today = new Date().toLocaleString();
+
+    let msg = `=====================================\n`;
+    msg += `       *COMPROBANTE DE ABONO*\n`;
+    msg += `=====================================\n\n`;
+    msg += `👋 Estimado(a) *${client.name}*,\n\n`;
+    msg += `Le informamos que hemos registrado exitosamente su abono. A continuación el detalle de la transacción[cite: 11]:\n\n`;
+    msg += `📅 *Fecha y Hora:* ${today}\n`;
+    msg += `💵 *Monto Abonado:* *${formatCOP(amountPaid)}*\n`;
+    msg += `💳 *Método de Pago / Cuenta:* ${accountName}\n\n`;
+    msg += `--- *RESUMEN DE CUENTA* ---\n`;
+    msg += `🔴 Saldo Anterior: ${formatCOP(previousDebt)}\n`;
+    msg += `🟢 Saldo Actual Pendiente: *${formatCOP(remainingDebt)}*\n\n`;
+
+    if (remainingDebt <= 0) {
+        msg += `🎉 ¡Felicidades! Su cuenta se encuentra completamente a PAZ Y SALVO.\n\n`;
+    } else {
+        msg += `📌 ¡Agradecemos su puntualidad y confianza!\n\n`;
+    }
+
+    msg += `=====================================\n`;
+    msg += `🏢 *POS Master* • _Sistema de Gestión Profesional_`;
+
+    let phone = client.phone ? client.phone.replace(/\D/g, '') : '';
+    const encoded = encodeURIComponent(msg);
+    const url = phone.length >= 7 ? `https://api.whatsapp.com/send?phone=${phone}&text=${encoded}` : `https://api.whatsapp.com/send?text=${encoded}`;
+
+    window.open(url, '_blank');
 }
 
         // --- POS & CARRITO ---
@@ -2603,10 +2948,15 @@ function renderCashControl() {
                 openTime: new Date().toLocaleString(),
                 startTimeStamp: Date.now()
             };
+saveData();
+    refreshAllUI();
 
-            saveData();
-            refreshAllUI();
-        }
+    // 🟢 ENVIAR REPORTE DE APERTURA POR WHATSAPP
+    sendCashReportWhatsApp('Apertura', {
+        time: openTimeString,
+        initial: initial
+    });
+}
 
        function closeCashRegister() {
     if (!confirm('¿Seguro que deseas realizar el cierre de caja?')) return;
@@ -2948,8 +3298,8 @@ function sendInvoiceToProviderWhatsApp(payableId) {
                 refreshAllUI();
             }
         }
-
-    function openInvoiceModal(editId = null) {
+// 1. Abrir Modal de Factura de Compra (Edición o Nueva)
+function openInvoiceModal(editId = null) {
     if (!state.cashRegister.isOpen) return alert('La caja está cerrada. No se pueden realizar modificaciones.');
 
     const providerSelect = document.getElementById('inv-provider');
@@ -2962,30 +3312,43 @@ function sendInvoiceToProviderWhatsApp(payableId) {
 
     const existingSelect = document.getElementById('inv-item-existing');
     if (existingSelect) {
-        existingSelect.innerHTML = '<option value="">-- Nuevo / Personalizado --</option>';
+        existingSelect.innerHTML = '<option value="">-- Seleccionar del Inventario --</option>';
         state.products.forEach(p => {
-            existingSelect.innerHTML += `<option value="${p.id}">${p.name} (Cat: ${p.category})</option>`;
+            existingSelect.innerHTML += `<option value="${p.id}">${p.name} - (Stock actual: ${p.stock}) - ${formatCOP(p.price)}</option>`;
         });
     }
 
-    // Si pasamos un ID, cargamos los datos de la factura existente para editarlos
     if (editId) {
         const inv = state.payables.find(p => p.id === parseInt(editId));
         if (inv) {
-            document.getElementById('invoice-modal-title').innerText = 'Editar Factura de Compra';
+            document.getElementById('invoice-modal-title').innerText = `Editar Factura de Compra #${inv.num}`;
             document.getElementById('inv-edit-id').value = inv.id;
             document.getElementById('inv-num').value = inv.num;
             if (providerSelect) providerSelect.value = inv.providerId;
             document.getElementById('inv-paid').value = inv.paid || 0;
             
-            // Cargar los artículos al arreglo temporal de edición
-            tempInvoiceItems = inv.items ? inv.items.map(i => ({
-                id: i.id || Date.now(),
-                name: i.name,
-                qty: i.qty,
-                cost: i.cost !== undefined ? i.cost : (i.price || 0),
-                price: i.price || 0
-            })) : [];
+            if (inv.items && inv.items.length > 0) {
+                tempInvoiceItems = inv.items.map(i => {
+                    const prodMatch = state.products.find(p => p.name.trim().toLowerCase() === i.name.trim().toLowerCase());
+                    return {
+                        id: i.id || Date.now() + Math.random(),
+                        name: i.name,
+                        qty: i.qty || 1,
+                        cost: i.cost !== undefined ? i.cost : (i.price || 0),
+                        price: i.price !== undefined ? i.price : (i.cost || 0),
+                        currentStock: prodMatch ? prodMatch.stock : 'N/A'
+                    };
+                });
+            } else {
+                tempInvoiceItems = [{
+                    id: Date.now(),
+                    name: `Factura ${inv.num} (Detalle General)`,
+                    qty: 1,
+                    cost: inv.total,
+                    price: inv.total,
+                    currentStock: 'N/A'
+                }];
+            }
 
             document.getElementById('inv-paid-container').classList.add('hidden');
             document.getElementById('inv-account-container').classList.add('hidden');
@@ -3005,10 +3368,90 @@ function sendInvoiceToProviderWhatsApp(payableId) {
     document.getElementById('invoice-modal').classList.remove('hidden');
 }
 
-// Guardar la nueva factura e impactar inventario y cuentas
+// 2. Selección de un producto existente del inventario
+function onSelectExistingProductForInvoice() {
+    const pId = document.getElementById('inv-item-existing').value;
+    if (!pId) return;
+
+    const product = state.products.find(p => p.id === parseInt(pId));
+    if (product) {
+        document.getElementById('inv-item-name').value = product.name;
+        document.getElementById('inv-item-cost').value = product.price || 0;
+        document.getElementById('inv-item-price').value = product.price || 0;
+    }
+}
+
+// 3. Renderizar la tabla de artículos con campos editables y stock
+function renderInvoiceItemsTable() {
+    const tbody = document.getElementById('invoice-items-table-body');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    let total = 0;
+
+    if (tempInvoiceItems.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="p-3 text-center text-slate-400">Sin artículos agregados a esta factura</td></tr>';
+    } else {
+        tempInvoiceItems.forEach((item, index) => {
+            const sub = item.qty * item.cost;
+            total += sub;
+
+            const prodMatch = state.products.find(p => p.name.trim().toLowerCase() === item.name.trim().toLowerCase());
+            const currentStockDisplay = prodMatch ? prodMatch.stock : (item.currentStock || 'N/A');
+
+            tbody.innerHTML += `
+                <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                    <td class="p-2 font-medium">
+                        <input type="text" value="${item.name}" onchange="updateInvoiceItemValue(${index}, 'name', this.value)" class="w-full px-2 py-1 border rounded text-xs font-semibold text-slate-800 bg-white">
+                    </td>
+                    <td class="p-2 text-center">
+                        <input type="number" min="1" value="${item.qty}" onchange="updateInvoiceItemValue(${index}, 'qty', this.value)" class="w-16 px-1.5 py-1 border rounded text-center font-bold text-xs">
+                    </td>
+                    <td class="p-2 text-center">
+                        <input type="number" min="0" value="${item.cost}" onchange="updateInvoiceItemValue(${index}, 'cost', this.value)" class="w-20 px-1.5 py-1 border rounded text-right font-bold text-xs">
+                    </td>
+                    <td class="p-2 text-center">
+                        <input type="number" min="0" value="${item.price}" onchange="updateInvoiceItemValue(${index}, 'price', this.value)" class="w-20 px-1.5 py-1 border rounded text-right font-bold text-xs">
+                    </td>
+                    <td class="p-2 text-center font-bold text-slate-700 text-xs">
+                        <span class="px-2 py-0.5 bg-slate-100 text-slate-800 rounded-md">${currentStockDisplay}</span>
+                    </td>
+                    <td class="p-2 text-right font-bold text-slate-900 text-xs">${formatCOP(sub)}</td>
+                    <td class="p-2 text-center">
+                        <button onclick="removeInvoiceItemRow(${index})" class="text-rose-500 hover:text-rose-700 p-1" title="Eliminar ítem"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
+    document.getElementById('inv-total').value = total;
+}
+
+// 4. Actualizar valores en tiempo real
+function updateInvoiceItemValue(index, field, newValue) {
+    if (!tempInvoiceItems[index]) return;
+
+    if (field === 'name') {
+        tempInvoiceItems[index].name = newValue.trim() || 'Artículo';
+    } else if (field === 'qty') {
+        const val = parseInt(newValue);
+        tempInvoiceItems[index].qty = (!isNaN(val) && val > 0) ? val : 1;
+    } else if (field === 'cost') {
+        const val = parseFloat(newValue);
+        tempInvoiceItems[index].cost = (!isNaN(val) && val >= 0) ? val : 0;
+    } else if (field === 'price') {
+        const val = parseFloat(newValue);
+        tempInvoiceItems[index].price = (!isNaN(val) && val >= 0) ? val : 0;
+    }
+
+    renderInvoiceItemsTable();
+}
+
+// 5. Guardar cambios en la factura y actualizar inventario
 function saveInvoice() {
     if (!state.cashRegister.isOpen) return alert('La caja está cerrada. No se pueden realizar modificaciones.');
     
+    const editId = document.getElementById('inv-edit-id').value;
     const invNum = document.getElementById('inv-num').value.trim();
     const providerId = parseInt(document.getElementById('inv-provider').value);
     const total = parseFloat(document.getElementById('inv-total').value) || 0;
@@ -3020,6 +3463,27 @@ function saveInvoice() {
 
     const provider = state.providers.find(p => p.id === providerId);
     const providerName = provider ? provider.name : 'General';
+
+    if (editId) {
+        const existingInvoice = state.payables.find(p => p.id === parseInt(editId));
+        if (existingInvoice) {
+            updateInventoryFromEditedInvoice(existingInvoice.items, tempInvoiceItems);
+
+            existingInvoice.num = invNum;
+            existingInvoice.providerId = providerId;
+            existingInvoice.providerName = providerName;
+            existingInvoice.total = total;
+            existingInvoice.balance = total - (existingInvoice.paid || 0);
+            existingInvoice.status = existingInvoice.balance <= 0 ? 'Pagada' : (existingInvoice.paid > 0 ? 'Parcial' : 'Pendiente');
+            existingInvoice.items = [...tempInvoiceItems];
+            
+            saveData();
+            closeInvoiceModal();
+            refreshAllUI();
+            alert('¡Factura de compra, precios y stock actualizados en Inventario y POS!');
+            return;
+        }
+    }
 
     if (initialPaid > 0 && !accountId) return alert('Selecciona una cuenta de salida para el abono inicial.');
 
@@ -3034,7 +3498,6 @@ function saveInvoice() {
     const balanceDue = total - initialPaid;
     const status = balanceDue <= 0 ? 'Pagada' : (initialPaid > 0 ? 'Parcial' : 'Pendiente');
 
-    // Impactar inventario de forma automática
     tempInvoiceItems.forEach(item => {
         let prod = state.products.find(p => p.name.trim().toLowerCase() === item.name.trim().toLowerCase());
         
@@ -3075,7 +3538,6 @@ function saveInvoice() {
     refreshAllUI();
     alert('¡Factura de compra registrada con éxito!');
 }
-
         function closeInvoiceModal() {
             document.getElementById('invoice-modal').classList.add('hidden');
             tempInvoiceItems = [];
@@ -3443,36 +3905,46 @@ function updateInventoryFromEditedInvoice(oldItems, newItems) {
     }
 }
 
-        // --- CLIENTES & CARTERA ---
-      function renderClients() {
-            const tbody = document.getElementById('clients-table-body');
-            if (!tbody) return;
-            tbody.innerHTML = '';
+     function renderClients() {
+    const tbody = document.getElementById('clients-table-body');
+    const carteraBadge = document.getElementById('clients-total-cartera-badge');
+    if (!tbody) return;
+    tbody.innerHTML = '';
 
-            if (state.clients.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400">Sin clientes registrados</td></tr>';
-                return;
-            }
+    if (state.clients.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400">Sin clientes registrados</td></tr>';
+        if (carteraBadge) carteraBadge.innerText = formatCOP(0);
+        return;
+    }
 
-            state.clients.forEach(c => {
-                const debt = c.debt || 0;
-                tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition">
-                        <td class="p-3 md:p-4 font-bold text-slate-800">${c.name}</td>
-                        <td class="p-3 md:p-4 text-slate-500">${c.phone || 'Sin Teléfono'}</td>
-                        <td class="p-3 md:p-4 font-bold ${debt > 0 ? 'text-rose-600' : 'text-emerald-600'}">${formatCOP(debt)}</td>
-                        <td class="p-3 md:p-4 text-right space-x-1">
-                            <button onclick="sendClientDebtWhatsApp(${c.id})" class="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-lg font-bold text-xs transition" title="Enviar Estado de Cuenta por WhatsApp">
-                                <i class="fa-brands fa-whatsapp text-sm"></i> WhatsApp
-                            </button>
-                            ${debt > 0 ? `<button onclick="openPaymentModal(${c.id})" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs transition"><i class="fa-solid fa-hand-holding-dollar mr-1"></i> Abonar</button>` : ''}
-                            <button onclick="openClientModal(${c.id})" class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-xs"><i class="fa-solid fa-pen"></i></button>
-                            <button onclick="deleteClient(${c.id})" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-xs"><i class="fa-solid fa-trash"></i></button>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
+    let totalCarteraGeneral = 0;
+
+    state.clients.forEach(c => {
+        const debt = c.debt || 0;
+        totalCarteraGeneral += debt; // Sumar la deuda de cada cliente al total general
+
+        tbody.innerHTML += `
+            <tr class="hover:bg-slate-50 transition">
+                <td class="p-3 md:p-4 font-bold text-slate-800">${c.name}</td>
+                <td class="p-3 md:p-4 text-slate-500">${c.phone || 'Sin Teléfono'}</td>
+                <td class="p-3 md:p-4 font-bold ${debt > 0 ? 'text-rose-600' : 'text-emerald-600'}">${formatCOP(debt)}</td>
+                <td class="p-3 md:p-4 text-right space-x-1">
+                    <button onclick="sendClientDebtWhatsApp(${c.id})" class="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-lg font-bold text-xs transition" title="Enviar Estado de Cuenta por WhatsApp">
+                        <i class="fa-brands fa-whatsapp text-sm"></i> WhatsApp
+                    </button>
+                    ${debt > 0 ? `<button onclick="openPaymentModal(${c.id})" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs transition"><i class="fa-solid fa-hand-holding-dollar mr-1"></i> Abonar</button>` : ''}
+                    <button onclick="openClientModal(${c.id})" class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-xs"><i class="fa-solid fa-pen"></i></button>
+                    <button onclick="deleteClient(${c.id})" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-xs"><i class="fa-solid fa-trash"></i></button>
+                </td>
+            </tr>
+        `;
+    });
+
+    // 🌟 Actualizar el valor total en la tarjeta gráfica superior
+    if (carteraBadge) {
+        carteraBadge.innerText = formatCOP(totalCarteraGeneral);
+    }
+}
         function sendClientDebtWhatsApp(clientId) {
             const client = state.clients.find(c => c.id === clientId);
             if (!client) return alert('Cliente no encontrado.');
@@ -3700,8 +4172,9 @@ function renderStatistics() {
     const totalCartera = state.clients
         .reduce((sum, c) => sum + (c.debt || 0), 0);
 
+    // 🔄 MODIFICA ESTA LÍNEA PARA ASEGURAR QUE SUME EL SALDO PENDIENTE REAL DE LAS CUENTAS POR PAGAR
     const totalPayables = state.payables
-        .reduce((sum, p) => sum + (p.balance || 0), 0);
+        .reduce((sum, p) => sum + (Math.max(0, p.total - (p.paid || 0))), 0);
 
     const totalTransacciones = state.sales.length;
 
@@ -3709,8 +4182,10 @@ function renderStatistics() {
     document.getElementById('stat-total-income').innerText = formatCOP(totalEfectivo);
     document.getElementById('stat-total-bancos').innerText = formatCOP(totalBancos);
     document.getElementById('stat-total-cartera').innerText = formatCOP(totalCartera);
-    document.getElementById('stat-total-expenses').innerText = formatCOP(totalPayables);
+    document.getElementById('stat-total-expenses').innerText = formatCOP(totalPayables); // <--- Tarjeta actualizada
     document.getElementById('stat-total-trans').innerText = totalTransacciones;
+
+    // ... (el resto del código de gráficos y estadísticas continúa igual)        
 
     // Detectar si el modo oscuro está activo para estilizar los gráficos adecuadamente
     const isDarkMode = document.body.classList.contains('dark-mode');
@@ -3738,6 +4213,7 @@ function renderStatistics() {
             data: {
                 labels: labelsFin,
                 datasets: [{
+                            
                     label: 'Monto de Venta ($)',
                     data: dataFin,
                     borderColor: '#10b981',
@@ -3892,7 +4368,7 @@ function renderStatistics() {
     }
 
     // ==========================================
-    // 5. GRÁFICO 4: TOP 5 ARTÍCULOS MÁS VENDIDOS (Barras Horizontales)
+    // 5. GRÁFICO 4: TOP 5 MAYOR ACTIVIDAD(Barras Horizontales)
     // ==========================================
     const ctxTopProducts = document.getElementById('chartTopProducts');
     if (ctxTopProducts) {
@@ -3937,7 +4413,7 @@ function renderStatistics() {
                     tooltip: {
                         callbacks: {
                             label: function(context) {
-                                return ' Cantidad vendida: ' + context.raw + ' unidades';
+                                return ' ACTIVIDAD RECIENTE: ' + context.raw + ' ';
                             }
                         }
                     }
@@ -3955,26 +4431,6 @@ function renderStatistics() {
             }
         });
     }
-}
-
-// Función auxiliar opcional para descargar el reporte operativo diario y enviarlo por WhatsApp
-function downloadAndSendDailyReport() {
-    const totalEfectivo = state.accounts.filter(a => a.type === 'Efectivo').reduce((sum, a) => sum + (a.balance || 0), 0);
-    const totalBancos = state.accounts.filter(a => a.type === 'Banco').reduce((sum, a) => sum + (a.balance || 0), 0);
-    const totalCartera = state.clients.reduce((sum, c) => sum + (c.debt || 0), 0);
-    const totalPayables = state.payables.reduce((sum, p) => sum + (p.balance || 0), 0);
-
-    let msg = `📊 *REPORTE OPERATIVO DIARIO - POS MASTER*\n`;
-    msg += `📅 *Fecha:* ${new Date().toLocaleDateString()}\n\n`;
-    msg += `💰 *Efectivo en Cajas:* ${formatCOP(totalEfectivo)}\n`;
-    msg += `🏦 *Saldos en Bancos:* ${formatCOP(totalBancos)}\n`;
-    msg += `🤝 *Cartera por Cobrar:* ${formatCOP(totalCartera)}\n`;
-    msg += `📉 *Cuentas por Pagar:* ${formatCOP(totalPayables)}\n`;
-    msg += `🛒 *Total Transacciones:* ${state.sales.length}\n\n`;
-    msg += `_Generado automáticamente por el Sistema POS Profesional._`;
-
-    const encoded = encodeURIComponent(msg);
-    window.open(`https://api.whatsapp.com/send?text=${encoded}`, '_blank');
 }
 
         function renderCharts() {
@@ -4067,35 +4523,83 @@ function downloadAndSendDailyReport() {
                 }
             });
         }
+function downloadAndSendDailyReport() {
+    const today = new Date().toLocaleDateString();
+    const todaySales = state.sales.filter(s => s.date && s.date.includes(today));
 
-        function downloadAndSendDailyReport() {
-            const today = new Date().toLocaleDateString();
-            const todaySales = state.sales.filter(s => s.date.includes(today));
-            const total = todaySales.reduce((sum, s) => sum + s.total, 0);
+    // Separar abonos de las ventas de productos del día
+    const abonosToday = todaySales.filter(s => s.method && (s.method.includes('Abono') || s.method === 'Abono a Crédito'));
+    const totalAbonos = abonosToday.reduce((sum, s) => sum + (s.total || 0), 0);
 
-            let doc = `=====================================\n`;
-            doc += `      REPORTE DIARIO DE OPERACIONES   \n`;
-            doc += `=====================================\n`;
-            doc += `Fecha: ${today}\n`;
-            doc += `Total Ventas del Día: ${formatCOP(total)}\n`;
-            doc += `Total Transacciones: ${todaySales.length}\n\n`;
-            doc += `--- DETALLE DE VENTAS ---\n`;
+    const productSales = todaySales.filter(s => !s.method || (!s.method.includes('Abono') && s.method !== 'Abono a Crédito'));
+    const totalTodaySales = productSales.reduce((sum, s) => sum + (s.total || 0), 0);
 
-            todaySales.forEach(s => {
-                doc += `• [${s.method}] ${s.clientName}: ${formatCOP(s.total)}\n`;
-            });
+    // Desglose por método de pago de las ventas del día
+    const cashSales = productSales.filter(s => s.method === 'Efectivo').reduce((sum, s) => sum + s.total, 0);
+    const transfSales = productSales.filter(s => s.method === 'Transferencia').reduce((sum, s) => sum + s.total, 0);
+    const creditSales = productSales.filter(s => s.method === 'Crédito' || s.method.startsWith('Crédito')).reduce((sum, s) => sum + s.total, 0);
 
-            doc += `\n=====================================\n`;
+    // Totales globales actuales
+    const totalEfectivo = state.accounts.filter(a => a.type === 'Efectivo').reduce((sum, a) => sum + (a.balance || 0), 0);
+    const totalBancos = state.accounts.filter(a => a.type === 'Banco').reduce((sum, a) => sum + (a.balance || 0), 0);
+    const totalCartera = state.clients.reduce((sum, c) => sum + (c.debt || 0), 0);
+    const totalPayables = state.payables.reduce((sum, p) => sum + (Math.max(0, p.total - (p.paid || 0))), 0);
+    
+    // Balance General Neto ((Efectivo + Bancos + Cartera) - Cuentas por Pagar)
+    const balanceGeneral = (totalEfectivo + totalBancos + totalCartera) - totalPayables;
 
-            const blob = new Blob([doc], { type: 'text/plain;charset=utf-8' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `Reporte_Diario_${today.replace(/\//g, '-')}.txt`;
-            link.click();
+    // Construcción del documento de texto descargable con detalle completo
+    let doc = `=====================================\n`;
+    doc += `   REPORTE DIARIO DE OPERACIONES     \n`;
+    doc += `=====================================\n`;
+    doc += `Fecha: ${today}\n\n`;
+    doc += `--- RESUMEN DE VENTAS DE HOY ---\n`;
+    doc += `• Total de Ventas: ${formatCOP(totalTodaySales)}\n`;
+    doc += `• Ventas en Efectivo: ${formatCOP(cashSales)}\n`;
+    doc += `• Ventas Transferencias: ${formatCOP(transfSales)}\n`;
+    doc += `• Ventas a Crédito: ${formatCOP(creditSales)}\n`;
+    doc += `• Total de Abonos: ${formatCOP(totalAbonos)}\n`;
+    doc += `• Total Transacciones: ${todaySales.length}\n\n`;
 
-            const encoded = encodeURIComponent(`📊 *REPORTE DIARIO DE VENTAS (${today})*\n💰 *Total:* ${formatCOP(total)}\n🧾 *Transacciones:* ${todaySales.length}`);
-            window.open(`https://api.whatsapp.com/send?text=${encoded}`, '_blank');
-        }
+    doc += `--- ESTADO FINANCIERO GENERAL ---\n`;
+    doc += `• Total Efectivo: ${formatCOP(totalEfectivo)}\n`;
+    doc += `• Total Bancos: ${formatCOP(totalBancos)}\n`;
+    doc += `• Total Cartera (Cuentas por Cobrar): ${formatCOP(totalCartera)}\n`;
+    doc += `• Total Cuentas por Pagar: ${formatCOP(totalPayables)}\n`;
+    doc += `• Balance General Neto: ${formatCOP(balanceGeneral)}\n`;
+    doc += `=====================================\n`;
+
+    // Descarga automática del archivo .txt
+    const blob = new Blob([doc], { type: 'text/plain;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `Reporte_Diario_${today.replace(/\//g, '-')}.txt`;
+    link.click();
+
+    // Construcción del mensaje profesional y completo para WhatsApp
+    let msg = `📊 *REPORTE DIARIO DE OPERACIONES*\n`;
+    msg += `📅 *Fecha:* ${today}\n\n`;
+    
+    msg += `💵 *RESUMEN DE VENTAS DEL DÍA*\n`;
+    msg += `• *Total de Ventas:* ${formatCOP(totalTodaySales)}\n`;
+    msg += `• Ventas en Efectivo: ${formatCOP(cashSales)}\n`;
+    msg += `• Ventas Transferencias: ${formatCOP(transfSales)}\n`;
+    msg += `• Ventas a Crédito: ${formatCOP(creditSales)}\n`;
+    msg += `• Total de Abonos: ${formatCOP(totalAbonos)}\n`;
+    msg += `• Total Transacciones del Día: ${todaySales.length}\n\n`;
+
+    msg += `🏦 *ESTADO FINANCIERO Y PATRIMONIAL*\n`;
+    msg += `• Total Efectivo: ${formatCOP(totalEfectivo)}\n`;
+    msg += `• Total Bancos: ${formatCOP(totalBancos)}\n`;
+    msg += `• Total Cartera / Cuentas por Cobrar: ${formatCOP(totalCartera)}\n`;
+    msg += `• Total Cuentas por Pagar: ${formatCOP(totalPayables)}\n`;
+    msg += `• *Balance General:* *${formatCOP(balanceGeneral)}*\n\n`;
+
+    msg += `✨ _Generado por POS Master_`;
+
+    const encoded = encodeURIComponent(msg);
+    window.open(`https://api.whatsapp.com/send?text=${encoded}`, '_blank');
+}
 
         // --- REPORTES Y TABLA DE VENTAS ---
         function renderReports() {
@@ -4328,7 +4832,7 @@ function openScannerForProduct() {
 // Variable temporal para editar los artículos de la factura seleccionada
 let tempEditBillingItems = [];
 
-// 1. Asegurar que el select se llene correctamente al abrir el modal
+// 1. Abrir modal y cargar la información real de la factura (artículos, precios y cantidades)
 function openEditBillingModal(rawId, type) {
     if (!state.cashRegister.isOpen) return alert('La caja está cerrada. No se pueden realizar modificaciones.');
 
@@ -4357,12 +4861,22 @@ function openEditBillingModal(rawId, type) {
         document.getElementById('edit-bill-party').value = sale.clientName || 'Cliente Ocasional';
         document.getElementById('edit-bill-method').value = sale.method;
         
-        tempEditBillingItems = sale.items ? sale.items.map(i => ({
-            id: i.id || Date.now(),
-            name: i.name,
-            qty: i.qty,
-            price: i.price || i.cost || 0
-        })) : [];
+        // Cargar ítems reales guardados en la venta
+        if (sale.items && sale.items.length > 0) {
+            tempEditBillingItems = sale.items.map(i => ({
+                id: i.id || Date.now(),
+                name: i.name,
+                qty: i.qty,
+                price: i.price || i.cost || 0
+            }));
+        } else {
+            tempEditBillingItems = [{
+                id: Date.now(),
+                name: `Venta General (${sale.id})`,
+                qty: 1,
+                price: sale.total
+            }];
+        }
 
     } else if (type === 'COMPRA') {
         const payable = state.payables.find(p => p.id === rawId);
@@ -4374,19 +4888,29 @@ function openEditBillingModal(rawId, type) {
         document.getElementById('edit-bill-party').value = payable.providerName || 'Proveedor';
         document.getElementById('edit-bill-method').value = payable.status || 'Pendiente';
         
-        tempEditBillingItems = payable.items ? payable.items.map(i => ({
-            id: i.id || Date.now(),
-            name: i.name,
-            qty: i.qty,
-            price: i.cost !== undefined ? i.cost : (i.price || 0)
-        })) : [];
+        // Cargar ítems reales guardados en la compra
+        if (payable.items && payable.items.length > 0) {
+            tempEditBillingItems = payable.items.map(i => ({
+                id: i.id || Date.now(),
+                name: i.name,
+                qty: i.qty,
+                price: i.cost !== undefined ? i.cost : (i.price || 0)
+            }));
+        } else {
+            tempEditBillingItems = [{
+                id: Date.now(),
+                name: `Factura ${payable.num} (Detalle General)`,
+                qty: 1,
+                price: payable.total
+            }];
+        }
     }
 
     renderEditBillingItemsTable();
     modal.classList.remove('hidden');
 }
 
-// 2. Renderizar la tabla de artículos dentro del modal
+// 2. Renderizar la tabla de artículos dentro del modal con campos editables
 function renderEditBillingItemsTable() {
     const tbody = document.getElementById('edit-billing-items-body');
     if (!tbody) return;
@@ -4403,13 +4927,204 @@ function renderEditBillingItemsTable() {
             tbody.innerHTML += `
                 <tr class="hover:bg-slate-50 transition">
                     <td class="p-2">
-                        <input type="text" value="${item.name}" onchange="updateEditBillingItemValue(${index}, 'name', this.value)" class="w-full px-2 py-1 border rounded text-xs font-semibold text-slate-800">
+                        <input type="text" value="${item.name}" onchange="updateEditBillingItemValue(${index}, 'name', this.value)" class="w-full px-2 py-1 border rounded text-xs font-semibold text-slate-800 bg-white">
                     </td>
                     <td class="p-2 text-center">
-                        <input type="number" min="1" value="${item.qty}" onchange="updateEditBillingItemValue(${index}, 'qty', this.value)" class="w-16 px-1.5 py-1 border rounded text-center text-xs font-bold text-slate-800">
+                        <input type="number" min="1" value="${item.qty}" onchange="updateEditBillingItemValue(${index}, 'qty', this.value)" class="w-16 px-1.5 py-1 border rounded text-center text-xs font-bold text-slate-800 bg-white">
                     </td>
                     <td class="p-2 text-center">
-                        <input type="number" min="0" value="${item.price}" onchange="updateEditBillingItemValue(${index}, 'price', this.value)" class="w-24 px-1.5 py-1 border rounded text-right text-xs font-bold text-slate-800">
+                        <input type="number" min="0" value="${item.price}" onchange="updateEditBillingItemValue(${index}, 'price', this.value)" class="w-24 px-1.5 py-1 border rounded text-right text-xs font-bold text-slate-800 bg-white">
+                    </td>
+                    <td class="p-2 text-right font-bold text-slate-900">${formatCOP(subtotal)}</td>
+                    <td class="p-2 text-center">
+                        <button onclick="removeEditBillingItemRow(${index})" class="text-rose-500 hover:text-rose-700 p-1" title="Eliminar ítem">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
+    document.getElementById('edit-bill-total').value = grandTotal;
+}
+// 3. Actualizar valores en tiempo real (nombre, cantidad, precio)
+function updateEditBillingItemValue(index, field, newValue) {
+    if (!tempEditBillingItems[index]) return;
+
+    if (field === 'name') {
+        tempEditBillingItems[index].name = newValue.trim() || 'Artículo';
+    } else if (field === 'qty') {
+        const val = parseInt(newValue);
+        tempEditBillingItems[index].qty = (!isNaN(val) && val > 0) ? val : 1;
+    } else if (field === 'price') {
+        const val = parseFloat(newValue);
+        tempEditBillingItems[index].price = (!isNaN(val) && val >= 0) ? val : 0;
+    }
+
+    renderEditBillingItemsTable();
+}
+// 3. Actualizar valores en tiempo real (nombre, cantidad, precio)
+function updateEditBillingItemValue(index, field, newValue) {
+    if (!tempEditBillingItems[index]) return;
+
+    if (field === 'name') {
+        tempEditBillingItems[index].name = newValue.trim() || 'Artículo';
+    } else if (field === 'qty') {
+        const val = parseInt(newValue);
+        tempEditBillingItems[index].qty = (!isNaN(val) && val > 0) ? val : 1;
+    } else if (field === 'price') {
+        const val = parseFloat(newValue);
+        tempEditBillingItems[index].price = (!isNaN(val) && val >= 0) ? val : 0;
+    }
+
+    renderEditBillingItemsTable();
+}
+// 5. Llenar el select con los productos de inventario
+function populateEditBillingProductSelect() {
+    const select = document.getElementById('edit-billing-select-prod');
+    if (!select) return;
+
+    select.innerHTML = '<option value="">-- Seleccionar de Inventario --</option>';
+    state.products.forEach(p => {
+        select.innerHTML += `<option value="${p.id}">${p.name} - ${formatCOP(p.price)}</option>`;
+    });
+}
+
+// 6. Eliminar un renglón de la tabla
+function removeEditBillingItemRow(index) {
+    tempEditBillingItems.splice(index, 1);
+    renderEditBillingItemsTable();
+}
+
+/// 7. Cerrar modal de edición
+function closeEditBillingModal() {
+    const modal = document.getElementById('edit-billing-modal');
+    if (modal) modal.classList.add('hidden');
+    tempEditBillingItems = [];
+}
+
+// 8. Guardar cambios en la factura editada
+function saveEditedBillingInvoice() {
+    if (!state.cashRegister.isOpen) return alert('La caja está cerrada. No se pueden realizar modificaciones.');
+
+    const rawId = parseInt(document.getElementById('edit-bill-id').value);
+    const type = document.getElementById('edit-bill-type').value;
+
+    const date = document.getElementById('edit-bill-date').value.trim();
+    const party = document.getElementById('edit-bill-party').value.trim();
+    const method = document.getElementById('edit-bill-method').value.trim();
+    const newTotal = parseFloat(document.getElementById('edit-bill-total').value) || 0;
+
+    if (!date || !party) {
+        return alert('La fecha y el nombre del cliente/proveedor son obligatorios.');
+    }
+
+   // Variable temporal para editar los artículos de la factura seleccionada
+let tempEditBillingItems = [];
+
+// 1. Abrir modal y cargar la información real de la factura (artículos, precios y cantidades)
+function openEditBillingModal(rawId, type) {
+    if (!state.cashRegister.isOpen) return alert('La caja está cerrada. No se pueden realizar modificaciones.');
+
+    const pin = prompt("Ingrese el código PIN de seguridad de 4 dígitos para editar la factura:");
+    if (pin === null) return;
+    if (pin.trim() !== "1234") {
+        return alert("❌ Código PIN incorrecto. No tiene permisos para editar esta factura.");
+    }
+
+    const modal = document.getElementById('edit-billing-modal');
+    if (!modal) return;
+
+    document.getElementById('edit-bill-id').value = rawId;
+    document.getElementById('edit-bill-type').value = type;
+
+    // Llenar el select con los productos actuales del inventario
+    populateEditBillingProductSelect();
+
+    if (type === 'VENTA') {
+        const sale = state.sales.find(s => s.id === rawId);
+        if (!sale) return alert('No se encontró la factura de venta.');
+
+        document.getElementById('edit-bill-code').value = `FAC-V-${sale.id.toString().slice(-5)}`;
+        document.getElementById('edit-bill-date').value = sale.date;
+        document.getElementById('lbl-edit-bill-party').innerText = 'Cliente';
+        document.getElementById('edit-bill-party').value = sale.clientName || 'Cliente Ocasional';
+        document.getElementById('edit-bill-method').value = sale.method;
+        
+        // Cargar ítems reales guardados en la venta
+        if (sale.items && sale.items.length > 0) {
+            tempEditBillingItems = sale.items.map(i => ({
+                id: i.id || Date.now(),
+                name: i.name,
+                qty: i.qty,
+                price: i.price || i.cost || 0
+            }));
+        } else {
+            tempEditBillingItems = [{
+                id: Date.now(),
+                name: `Venta General (${sale.id})`,
+                qty: 1,
+                price: sale.total
+            }];
+        }
+
+    } else if (type === 'COMPRA') {
+        const payable = state.payables.find(p => p.id === rawId);
+        if (!payable) return alert('No se encontró la factura de compra.');
+
+        document.getElementById('edit-bill-code').value = payable.num || `FAC-C-${payable.id.toString().slice(-5)}`;
+        document.getElementById('edit-bill-date').value = payable.date;
+        document.getElementById('lbl-edit-bill-party').innerText = 'Proveedor';
+        document.getElementById('edit-bill-party').value = payable.providerName || 'Proveedor';
+        document.getElementById('edit-bill-method').value = payable.status || 'Pendiente';
+        
+        // Cargar ítems reales guardados en la compra
+        if (payable.items && payable.items.length > 0) {
+            tempEditBillingItems = payable.items.map(i => ({
+                id: i.id || Date.now(),
+                name: i.name,
+                qty: i.qty,
+                price: i.cost !== undefined ? i.cost : (i.price || 0)
+            }));
+        } else {
+            tempEditBillingItems = [{
+                id: Date.now(),
+                name: `Factura ${payable.num} (Detalle General)`,
+                qty: 1,
+                price: payable.total
+            }];
+        }
+    }
+
+    renderEditBillingItemsTable();
+    modal.classList.remove('hidden');
+}
+
+// 2. Renderizar la tabla de artículos dentro del modal con campos editables
+function renderEditBillingItemsTable() {
+    const tbody = document.getElementById('edit-billing-items-body');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    let grandTotal = 0;
+
+    if (tempEditBillingItems.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="p-3 text-center text-slate-400">Sin artículos en esta factura</td></tr>';
+    } else {
+        tempEditBillingItems.forEach((item, index) => {
+            const subtotal = item.qty * item.price;
+            grandTotal += subtotal;
+
+            tbody.innerHTML += `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="p-2">
+                        <input type="text" value="${item.name}" onchange="updateEditBillingItemValue(${index}, 'name', this.value)" class="w-full px-2 py-1 border rounded text-xs font-semibold text-slate-800 bg-white">
+                    </td>
+                    <td class="p-2 text-center">
+                        <input type="number" min="1" value="${item.qty}" onchange="updateEditBillingItemValue(${index}, 'qty', this.value)" class="w-16 px-1.5 py-1 border rounded text-center text-xs font-bold text-slate-800 bg-white">
+                    </td>
+                    <td class="p-2 text-center">
+                        <input type="number" min="0" value="${item.price}" onchange="updateEditBillingItemValue(${index}, 'price', this.value)" class="w-24 px-1.5 py-1 border rounded text-right text-xs font-bold text-slate-800 bg-white">
                     </td>
                     <td class="p-2 text-right font-bold text-slate-900">${formatCOP(subtotal)}</td>
                     <td class="p-2 text-center">
@@ -4442,31 +5157,59 @@ function updateEditBillingItemValue(index, field, newValue) {
     renderEditBillingItemsTable();
 }
 
-// 4. Agregar un nuevo renglón de artículo vacío
-function addEditBillingItemRow() {
-    tempEditBillingItems.push({
-        id: Date.now(),
-        name: 'Nuevo Artículo',
-        qty: 1,
-        price: 0
-    });
+// 4. Agregar producto seleccionado desde el inventario
+function addSelectedInventoryToEditBilling() {
+    const select = document.getElementById('edit-billing-select-prod');
+    if (!select || !select.value) {
+        return alert('Por favor selecciona un artículo del inventario.');
+    }
+
+    const prodId = Number(select.value);
+    const prod = state.products.find(p => Number(p.id) === prodId);
+    if (!prod) return;
+
+    const existingItem = tempEditBillingItems.find(i => Number(i.id) === prodId || i.name.trim().toLowerCase() === prod.name.trim().toLowerCase());
+    
+    if (existingItem) {
+        existingItem.qty += 1;
+    } else {
+        tempEditBillingItems.push({
+            id: prod.id,
+            name: prod.name,
+            qty: 1,
+            price: prod.price || 0
+        });
+    }
+
+    select.value = '';
     renderEditBillingItemsTable();
 }
 
-// 5. Eliminar un renglón de artículo
+// 5. Llenar el select con los productos de inventario
+function populateEditBillingProductSelect() {
+    const select = document.getElementById('edit-billing-select-prod');
+    if (!select) return;
+
+    select.innerHTML = '<option value="">-- Seleccionar de Inventario --</option>';
+    state.products.forEach(p => {
+        select.innerHTML += `<option value="${p.id}">${p.name} - ${formatCOP(p.price)}</option>`;
+    });
+}
+
+// 6. Eliminar un renglón de la tabla
 function removeEditBillingItemRow(index) {
     tempEditBillingItems.splice(index, 1);
     renderEditBillingItemsTable();
 }
 
-// 6. Cerrar modal de edición
+// 7. Cerrar modal de edición
 function closeEditBillingModal() {
     const modal = document.getElementById('edit-billing-modal');
     if (modal) modal.classList.add('hidden');
     tempEditBillingItems = [];
 }
 
-// FUNCIÓN PARA GUARDAR Y SINCRONIZAR FACTURA EDITADA AL INSTANTE
+// 8. Guardar cambios en la factura editada
 function saveEditedBillingInvoice() {
     if (!state.cashRegister.isOpen) return alert('La caja está cerrada. No se pueden realizar modificaciones.');
 
@@ -4488,13 +5231,7 @@ function saveEditedBillingInvoice() {
             sale.date = date;
             sale.clientName = party;
             sale.method = method;
-            sale.total = newTotal; // Actualiza el total de la factura
-            
-            // Si es una venta a crédito, sincronizamos también el saldo pendiente proporcional si aplica
-            if (sale.method.includes('Crédito') && sale.pendingBalance !== undefined) {
-                sale.pendingBalance = newTotal; // O ajusta según los abonos previos
-            }
-
+            sale.total = newTotal;
             sale.items = tempEditBillingItems.map(i => ({
                 id: i.id,
                 name: i.name,
@@ -4502,7 +5239,7 @@ function saveEditedBillingInvoice() {
                 price: i.price
             }));
         }
-  } else if (type === 'COMPRA') {
+    } else if (type === 'COMPRA') {
         const payable = state.payables.find(p => p.id === rawId);
         if (payable) {
             payable.date = date;
@@ -4519,8 +5256,12 @@ function saveEditedBillingInvoice() {
             }));
         }
     }
-
-   // ⚡ PASO CLAVE: Recalcular automáticamente las deudas de los clientes con base en las facturas actualizadas
+    saveData();
+    closeEditBillingModal();
+    refreshAllUI();
+    alert('¡Factura modificada con éxito!');
+}
+    // ⚡ PASO CLAVE: Recalcular automáticamente las deudas de los clientes con base en las facturas actualizadas
     recalculateClientDebts();
 
     // Guardar cambios y sincronizar en Firestore (tiempo real)
@@ -4691,33 +5432,126 @@ function closeQuickProductModal() {
 function closeQuickProductModal() {
     document.getElementById('quick-product-modal').classList.add('hidden');
 }
+
  </script>
-<!-- TICKET TÉRMICO OCULTO PARA IMPRESIÓN 80MM -->
-<div id="thermal-ticket" class="hidden">
-    <div style="text-align: center; margin-bottom: 8px;">
-        <h2 style="font-size: 14px; font-weight: bold; margin: 0;">BRAMY PARFUMS</h2>
-        <p style="margin: 2px 0; font-size: 10px;">NIT: 900.123.456-1</p>
-        <p style="margin: 2px 0; font-size: 10px;">Régimen Simplificado</p>
-        <p style="margin: 2px 0; font-size: 9px;" id="ticket-date"></p>
-        <p style="margin: 2px 0; font-size: 9px;" id="ticket-client"></p>
+ <!-- MODAL EDICIÓN COMPLETA DE FACTURA CON ARTÍCULOS REALES -->
+<div id="edit-billing-modal" class="fixed inset-0 bg-slate-900/50 hidden flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl max-w-2xl w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center border-b pb-3">
+            <h3 class="text-lg font-bold text-slate-800">Editar Factura & Detalle</h3>
+            <button onclick="closeEditBillingModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        
+        <input type="hidden" id="edit-bill-id">
+        <input type="hidden" id="edit-bill-type">
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Código</label>
+                <input type="text" id="edit-bill-code" class="w-full px-3 py-2 border rounded-xl text-sm bg-slate-100 font-bold" readonly>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Fecha</label>
+                <input type="text" id="edit-bill-date" class="w-full px-3 py-2 border rounded-xl text-sm">
+            </div>
+            <div>
+                <label id="lbl-edit-bill-party" class="block text-xs font-semibold text-slate-500 uppercase mb-1">Tercero</label>
+                <input type="text" id="edit-bill-party" class="w-full px-3 py-2 border rounded-xl text-sm">
+            </div>
+        </div>
+
+        <div>
+            <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Método / Estado</label>
+            <input type="text" id="edit-bill-method" class="w-full px-3 py-2 border rounded-xl text-sm">
+        </div>
+
+        <!-- SECCIÓN DE ARTÍCULOS REALES -->
+        <div class="border border-slate-200 rounded-xl p-3.5 bg-slate-50 space-y-3">
+            <div class="flex justify-between items-center gap-2 flex-wrap">
+                <h4 class="text-xs font-bold uppercase text-slate-600">Artículos de la Factura</h4>
+                <div class="flex items-center gap-2">
+                    <select id="edit-billing-select-prod" class="px-2.5 py-1.5 border rounded-lg text-xs bg-white">
+                        <option value="">-- Seleccionar de Inventario --</option>
+                    </select>
+                    <button onclick="addSelectedInventoryToEditBilling()" type="button" class="bg-slate-800 hover:bg-slate-900 text-white font-bold px-3 py-1.5 rounded-lg text-xs">
+                        <i class="fa-solid fa-plus"></i> Agregar
+                    </button>
+                </div>
+            </div>
+
+            <div class="max-h-48 overflow-y-auto border rounded-lg bg-white">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-100 text-slate-600 font-bold uppercase border-b">
+                        <tr>
+                            <th class="p-2.5">Artículo</th>
+                            <th class="p-2.5 text-center w-20">Cant.</th>
+                            <th class="p-2.5 text-center w-28">Precio U. ($)</th>
+                            <th class="p-2.5 text-right w-28">Subtotal ($)</th>
+                            <th class="p-2.5 text-center w-12">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="edit-billing-items-body" class="divide-y divide-slate-100"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="flex justify-between items-center pt-2 border-t">
+            <span class="text-xs text-slate-500 font-semibold">* El total se recalcula automáticamente.</span>
+            <div class="text-right">
+                <span class="text-xs font-semibold text-slate-500 block uppercase">Total Factura</span>
+                <input type="number" id="edit-bill-total" class="w-36 px-3 py-1.5 border rounded-xl font-bold text-slate-900 text-base text-right bg-slate-100" readonly>
+            </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2 border-t">
+            <button onclick="closeEditBillingModal()" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl text-xs font-medium">Cancelar</button>
+            <button onclick="saveEditedBillingInvoice()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow-md">Guardar Cambios</button>
+        </div>
     </div>
-    <div style="border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 4px 0; margin-bottom: 6px;">
-        <table style="width: 100%; font-size: 10px;">
+</div>
+
+<!-- TICKET TÉRMICO PROFESIONAL 80MM -->
+<div id="thermal-ticket" class="hidden" style="width: 80mm; font-family: 'Courier New', Courier, monospace; font-size: 11px; color: #000; background: #fff; padding: 8px; box-sizing: border-box;">
+    <div style="text-align: center; margin-bottom: 10px;">
+        <h2 style="font-size: 15px; font-weight: bold; margin: 0; text-transform: uppercase;">BRAMY PARFUMS</h2>
+               <p style="margin: 2px 0; font-size: 10px;">Régimen Simplificado</p>
+        <p style="margin: 2px 0; font-size: 10px;">Tel: 3217088014</p>
+        <div style="border-top: 1px dashed #000; margin: 6px 0;"></div>
+        <p style="margin: 2px 0; font-size: 11px; font-weight: bold;" id="ticket-invoice-num">FACTURA DE VENTA: FAC-00000</p>
+        <p style="margin: 2px 0; font-size: 10px;" id="ticket-date"></p>
+        <p style="margin: 2px 0; font-size: 10px;" id="ticket-client"></p>
+        <p style="margin: 2px 0; font-size: 10px;" id="ticket-payment-method"></p>
+    </div>
+    
+    <div style="border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 6px 0; margin-bottom: 6px;">
+        <table style="width: 100%; font-size: 10px; border-collapse: collapse;">
             <thead>
-                <tr>
-                    <th style="text-align: left;">Cant / Descrip</th>
-                    <th style="text-align: right;">Total</th>
+                <tr style="border-bottom: 1px dashed #000;">
+                    <th style="text-align: left; padding-bottom: 3px;">CANT / DESCRIPCIÓN</th>
+                    <th style="text-align: right; padding-bottom: 3px;">TOTAL</th>
                 </tr>
             </thead>
             <tbody id="ticket-items-body"></tbody>
         </table>
     </div>
-    <div style="text-align: right; font-size: 11px; font-weight: bold; margin-bottom: 8px;">
-        <p style="margin: 2px 0;">TOTAL: <span id="ticket-total">$0.000</span></p>
+
+    <div style="font-size: 11px; margin-bottom: 10px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+            <span>Subtotal:</span>
+            <span id="ticket-subtotal">$0.000</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 4px; font-weight: bold; font-size: 13px; border-top: 1px solid #000; padding-top: 4px;">
+            <span>TOTAL A PAGAR:</span>
+            <span id="ticket-total">$0.000</span>
+        </div>
     </div>
-    <div style="text-align: center; font-size: 9px; margin-top: 8px; border-top: 1px dashed #000; pt-1;">
-        <p style="margin: 2px 0;">¡Gracias por su compra!</p>
-        <p style="margin: 2px 0;">Conserve este tiquete para cambios o garantía</p>
+
+    <div style="text-align: center; font-size: 10px; margin-top: 10px; border-top: 1px dashed #000; padding-top: 6px;">
+        <p style="margin: 2px 0; font-weight: bold;">¡GRACIAS POR SU COMPRA!</p>
+        <p style="margin: 2px 0; font-size: 9px;">Conserve este tiquete para cambios o garantía.</p>
+        <p style="margin: 4px 0 0 0; font-size: 8px; font-family: monospace;">* * * * * * * * * * * * * * * * * * * *</p>
     </div>
 </div>
 <!-- MODAL EDICIÓN COMPLETA DE FACTURA CON ARTÍCULOS -->
