@@ -5,7 +5,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script>
-  const firebaseConfig = {
+ const firebaseConfig = {
 
   apiKey: "AIzaSyCDyhMXDoU67Rdu20ee5a2FQUAS_l0FPik",
 
@@ -23,26 +23,26 @@
 
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
- // --- ESTADO GLOBAL FIJO (INMUTABLE AL REFRESCAR) ---
+// --- ESTADO GLOBAL FIJO Y SEGURO (INMUTABLE AL REFRESCAR) ---
 let state = {
-    products: [
-        { id: 1, name: "Producto Inicial 1", category: "General", price: 10000, stock: 50, barcode: "770001" },
-        { id: 2, name: "Producto Inicial 2", category: "General", price: 20000, stock: 30, barcode: "770002" }
+    products: JSON.parse(localStorage.getItem('pos_products')) || [
+        { id: 1, name: "Producto Inicial 1", category: "General", price: 10000, stock: 50, stockBodega: 0, barcode: "770001" },
+        { id: 2, name: "Producto Inicial 2", category: "General", price: 20000, stock: 30, stockBodega: 0, barcode: "770002" }
     ],
-    sales: [],
-    clients: [
+    sales: JSON.parse(localStorage.getItem('pos_sales')) || [],
+    clients: JSON.parse(localStorage.getItem('pos_clients')) || [
         { id: 1, name: "Cliente General", phone: "3000000000", debt: 0 }
     ],
-    accounts: [
+    accounts: JSON.parse(localStorage.getItem('pos_accounts')) || [
         { id: 1, name: 'Caja General', type: 'Efectivo', balance: 100000 },
         { id: 2, name: 'Bancolombia', type: 'Banco', balance: 500000 }
     ],
-    providers: [
+    providers: JSON.parse(localStorage.getItem('pos_providers')) || [
         { id: 1, name: "Proveedor Principal", phone: "3100000000" }
     ],
-    payables: [],
-    cashRegister: { isOpen: true, initialAmount: 100000, openTime: "Inicio Fijo", startTimeStamp: Date.now() },
-    cashHistory: [],
+    payables: JSON.parse(localStorage.getItem('pos_payables')) || [],
+    cashRegister: JSON.parse(localStorage.getItem('pos_cash')) || { isOpen: true, initialAmount: 100000, openTime: "Inicio Fijo", startTimeStamp: Date.now() },
+    cashHistory: JSON.parse(localStorage.getItem('pos_cash_history')) || [],
     cart: []
 };
 </script>
@@ -643,6 +643,9 @@ let state = {
                 <button onclick="switchTab('inventory')" id="btn-inventory" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
                     <i class="fa-solid fa-boxes-stacked w-5"></i> Inventario
                 </button>
+                <button onclick="switchTab('bodega')" id="btn-bodega" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
+    <i class="fa-solid fa-warehouse w-5"></i> Bodega
+</button>
                 <button onclick="switchTab('cash')" id="btn-cash" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
                     <i class="fa-solid fa-vault w-5"></i> Caja / Cierre
                 </button>
@@ -727,6 +730,9 @@ let state = {
                     </button>
                     <button onclick="switchTab('billing'); toggleMobileMoreMenu();" id="mob-btn-billing" class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100 text-slate-700 font-medium text-xs active:bg-emerald-50">
     <i class="fa-solid fa-file-invoice-dollar text-emerald-600 text-base"></i> Facturación
+</button>
+<button onclick="switchTab('bodega'); toggleMobileMoreMenu();" id="mob-btn-bodega" class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100 text-slate-700 font-medium text-xs active:bg-emerald-50">
+    <i class="fa-solid fa-warehouse text-amber-600 text-base"></i> Bodega
 </button>
                     <button onclick="switchTab('payables'); toggleMobileMoreMenu();" id="mob-btn-payables" class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100 text-slate-700 font-medium text-xs active:bg-emerald-50">
                         <i class="fa-solid fa-file-invoice-dollar text-emerald-600 text-base"></i> Cuentas x Pagar
@@ -814,7 +820,7 @@ let state = {
             </div>
         </div>
     </div>
-
+  
     <!-- TABLA DE FACTURAS -->
     <div class="bg-white rounded-2xl shadow-sm overflow-x-auto border border-slate-100">
         <table class="w-full text-left border-collapse min-w-[700px]">
@@ -826,13 +832,165 @@ let state = {
                     <th class="p-3 md:p-4">Método / Estado</th>
                     <th class="p-3 md:p-4 text-right">Total ($)</th>
                     <th class="p-3 md:p-4 text-center">Acciones</th>
+                    
                 </tr>
             </thead>
             <tbody id="billing-table-body" class="divide-y divide-slate-100 text-xs md:text-sm text-slate-700"></tbody>
         </table>
     </div>
 </section>
+<!-- VISTA BODEGA REDISEÑADA: GESTIÓN DE PERFUMES Y EXISTENCIAS EN BODEGA -->
+<section id="view-bodega" class="hidden space-y-4 md:space-y-6">
+    <!-- PANEL PRINCIPAL Y FILTROS DE BODEGA -->
+    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm p-4 md:p-6 border border-slate-100 dark:border-slate-800 space-y-4">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 border-b dark:border-slate-800 pb-4">
+            <div>
+                <h2 class="text-base md:text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                    <i class="fa-solid fa-warehouse text-amber-500"></i> Bodega Central de Perfumes
+                </h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Control de stock exclusivo en bodega central, mililitros y referencias.</p>
+            </div>
+            
+            <!-- BOTÓN AÑADIR PERFUME A BODEGA -->
+            <button onclick="openBodegaModal()" class="w-full md:w-auto bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold px-5 py-2.5 rounded-xl transition shadow-lg shadow-amber-500/25 text-xs md:text-sm flex items-center justify-center gap-2 cursor-pointer active:scale-95">
+                <i class="fa-solid fa-plus text-sm"></i>
+                <span>Nuevo Perfume en Bodega</span>
+            </button>
+        </div>
 
+       <!-- ZONA DE BÚSQUEDA Y CONTADOR DE REFERENCIAS EN BODEGA -->
+<div class="flex flex-col md:flex-row justify-between items-center gap-3">
+    <div class="relative w-full md:w-96">
+        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+        <input type="text" id="bodega-search" oninput="renderBodega()" placeholder="Buscar perfume por nombre, marca o ml..." class="w-full pl-10 pr-4 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-xs md:text-sm bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500">
+    </div>
+   
+</div>
+
+<script>
+// Se ejecuta automáticamente al cargar la página y detecta cambios
+document.addEventListener("DOMContentLoaded", () => {
+    // Intentar renderizar si los datos ya están disponibles
+    intentarRenderizarBodega();
+});
+
+function intentarRenderizarBodega() {
+    const productos = obtenerListaProductos();
+    if (productos.length > 0) {
+        renderBodega();
+    } else {
+        // Si los datos cargan un poco después (ej. Firebase), reintentar en 500ms
+        setTimeout(intentarRenderizarBodega, 500);
+    }
+}
+
+function obtenerListaProductos() {
+    // Busca de forma segura en las estructuras de datos más comunes de tu proyecto
+    if (typeof state !== 'undefined' && state.products) return state.products;
+    if (typeof window.products !== 'undefined') return window.products;
+    if (typeof window.productos !== 'undefined') return window.productos;
+    if (typeof window.perfumes !== 'undefined') return window.perfumes;
+    return [];
+}
+
+function renderBodega() {
+    const productos = obtenerListaProductos();
+    const countBadge = document.getElementById('bodega-count');
+    const tbody = document.getElementById('bodega-table-body');
+    
+    // Mostrar el total general de referencias (ej. 121)
+    if (countBadge) {
+        countBadge.innerText = productos.length;
+    }
+
+    if (!tbody) return;
+
+    const searchInput = document.getElementById('bodega-search');
+    const filter = searchInput ? searchInput.value.toLowerCase() : '';
+    tbody.innerHTML = '';
+
+    const filtered = productos.filter(p => {
+        const nombre = (p.name || p.nombre || '').toLowerCase();
+        const categoria = (p.category || p.categoria || '').toLowerCase();
+        return nombre.includes(filter) || categoria.includes(filter);
+    });
+
+    if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400">No se encontraron artículos en bodega.</td></tr>';
+        return;
+    }
+
+    filtered.forEach(p => {
+        const nombre = p.name || p.nombre || 'Sin nombre';
+        const categoria = p.category || p.categoria || 'General';
+        const stock = p.stockBodega !== undefined ? p.stockBodega : (p.stock || 0);
+        const id = p.id || p.codigo || '';
+
+        tbody.innerHTML += `
+            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition border-b border-slate-100 dark:border-slate-800">
+                <td class="p-3 md:p-4 font-bold text-slate-800 dark:text-white">${nombre}</td>
+                <td class="p-3 md:p-4 text-slate-500 dark:text-slate-400">${categoria}</td>
+                <td class="p-3 md:p-4 text-center">
+                    <span class="px-3 py-1 bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 font-bold rounded-lg border border-amber-200 dark:border-amber-800">
+                        ${stock}
+                    </span>
+                </td>
+                <td class="p-3 md:p-4 text-center">
+                    <button onclick="openBodegaModal('${id}')" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl text-xs transition shadow-sm flex items-center gap-1.5 mx-auto">
+                        <i class="fa-solid fa-pen-to-square"></i> Editar Stock
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+}
+</script>
+    <!-- MODAL DE EDICIÓN DE STOCK EN BODEGA -->
+<div id="bodega-modal" class="fixed inset-0 bg-slate-900/50 hidden flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+        <h3 id="modal-bodega-title" class="text-lg font-bold text-slate-800">Editar Perfume en Bodega</h3>
+        <input type="hidden" id="bodega-prod-id">
+        <div>
+            <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Nombre del Perfume</label>
+            <input type="text" id="bodega-prod-name" class="w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm">
+        </div>
+        <div>
+            <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Categoría / Línea</label>
+            <input type="text" id="bodega-prod-category" class="w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm">
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Precio de Venta ($)</label>
+                <input type="number" id="bodega-prod-price" class="w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Stock en Bodega</label>
+                <input type="number" id="bodega-prod-stock-bodega" class="w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm font-bold text-amber-600">
+            </div>
+        </div>
+        <div class="flex justify-end gap-2 pt-2 border-t">
+            <button onclick="closeBodegaModal()" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl transition text-xs font-medium">Cancelar</button>
+            <button onclick="saveBodegaProduct()" class="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl transition text-xs font-semibold shadow-md">Guardar Cambios</button>
+        </div>
+    </div>
+</div>
+
+    <!-- TABLA PROFESIONAL DE PERFUMES EN BODEGA (SIN ACCIONES NI CUADROS EXTRA) -->
+    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse min-w-[500px]">
+                <thead>
+                    <tr class="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-100 dark:border-slate-800 text-slate-500 dark:text-slate-400 text-[11px] font-bold uppercase tracking-wider">
+                        <th class="p-3 md:p-4">Perfume / Referencia</th>
+                        <th class="p-3 md:p-4">Categoría / Línea</th>
+                        <th class="p-3 md:p-4 text-center">Stock Bodega</th>
+                    </tr>
+                </thead>
+                <tbody id="bodega-table-body" class="divide-y divide-slate-100 dark:divide-slate-800 text-xs md:text-sm"></tbody>
+            </table>
+        </div>
+    </div>
+</section>
                 <!-- VISTA 1: POS (VENTAS) -->
                 <section id="view-pos" class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 h-full">
                     <div class="lg:col-span-2 flex flex-col h-full bg-white rounded-2xl shadow-sm p-3 md:p-4 border border-slate-100">
@@ -889,29 +1047,53 @@ let state = {
                                 <label class="block text-[10px] md:text-xs font-semibold text-slate-500 uppercase mb-1">Cuenta / Método de Pago</label>
                                 <select id="checkout-account" class="w-full px-3 py-1.5 md:py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs md:text-sm font-medium bg-slate-50"></select>
                             </div>
-                            <div class="grid grid-cols-2 gap-2 pt-1">
-                                <button onclick="checkout('Efectivo')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 md:py-2.5 rounded-xl transition shadow-lg shadow-emerald-600/20 text-xs md:text-sm">
-                                    <i class="fa-solid fa-money-bill-wave mr-1"></i> Cobrar Efec.
-                                </button>
-                                <button onclick="checkout('Transferencia')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 md:py-2.5 rounded-xl transition shadow-lg shadow-blue-600/20 text-xs md:text-sm">
-                                    <i class="fa-solid fa-right-left mr-1"></i> Transf.
-                                </button>
-                            </div>
-                            <button onclick="checkout('Crédito')" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-semibold py-2 rounded-xl transition flex items-center justify-center gap-2 text-xs md:text-sm shadow-md">
-                                <i class="fa-solid fa-hand-holding-dollar"></i> Venta a Crédito / Fiado
-                            </button>
-                            <div class="grid grid-cols-2 gap-2">
-                                <button onclick="sendInvoiceWhatsApp()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2 rounded-xl transition flex items-center justify-center gap-1 text-xs shadow-md">
-                                    <i class="fa-brands fa-whatsapp text-sm"></i> Factura WhatsApp
-                                </button>
-                                <button onclick="printThermalTicket()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-semibold py-2 rounded-xl transition flex items-center justify-center gap-1 text-xs shadow-md">
-    <i class="fa-solid fa-print text-sm"></i> Imprimir Tiquete (80mm)
-</button>
-<!-- Botón para Activar Escáner de Cámara -->
-<button onclick="openBarcodeScanner()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl font-medium flex items-center gap-2 transition shadow-lg shadow-indigo-600/20" title="Escanear con Cámara">
-    <i class="fa-solid fa-barcode text-lg"></i>
-    <span class="hidden sm:inline">Escanear Código</span>
-</button>
+                            <!-- Botonera del Carrito -->
+        <div class="pt-3 border-t border-slate-200/80 dark:border-slate-800 space-y-2.5">
+            <div class="grid grid-cols-2 gap-2">
+                <button onclick="checkout('Efectivo')" class="group relative overflow-hidden bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-2.5 px-3 rounded-xl transition-all shadow-lg shadow-emerald-600/25 active:scale-[0.98] flex items-center justify-center gap-2 text-xs md:text-sm">
+                    <div class="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-money-bill-wave text-white text-xs"></i>
+                    </div>
+                    <span>Cobrar Efec.</span>
+                </button>
+                <button onclick="checkout('Transferencia')" class="group relative overflow-hidden bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-2.5 px-3 rounded-xl transition-all shadow-lg shadow-blue-600/25 active:scale-[0.98] flex items-center justify-center gap-2 text-xs md:text-sm">
+                    <div class="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-right-left text-white text-xs"></i>
+                    </div>
+                    <span>Transf.</span>
+                </button>
+            </div>
+
+            <button onclick="checkout('Crédito')" class="w-full group relative overflow-hidden bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white font-bold py-2.5 px-4 rounded-xl transition-all shadow-md shadow-amber-500/20 active:scale-[0.98] flex items-center justify-center gap-2 text-xs md:text-sm">
+                <i class="fa-solid fa-hand-holding-dollar text-amber-100"></i>
+                <span>Venta a Crédito / Fiado</span>
+            </button>
+
+            <div class="grid grid-cols-2 gap-2">
+                <button onclick="openBarcodeScanner()" class="bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 font-bold py-2 px-3 rounded-xl transition flex items-center justify-center gap-2 text-xs active:scale-95">
+                    <i class="fa-solid fa-barcode text-sm"></i>
+                    <span>Escanear</span>
+                </button>
+                <button onclick="printThermalTicket()" class="bg-slate-800 hover:bg-slate-900 text-slate-100 font-bold py-2 px-3 rounded-xl transition flex items-center justify-center gap-2 text-xs active:scale-95">
+                    <i class="fa-solid fa-print text-sm"></i>
+                    <span>Tiquete 80mm</span>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+                <button onclick="sendInvoiceWhatsApp()" class="bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 font-bold py-2 px-3 rounded-xl transition flex items-center justify-center gap-2 text-xs active:scale-95">
+                    <i class="fa-brands fa-whatsapp text-emerald-600 text-base"></i>
+                    <span>Factura WA</span>
+                </button>
+                <button onclick="sendQuotationWhatsApp()" class="bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800 font-bold py-2 px-3 rounded-xl transition flex items-center justify-center gap-2 text-xs active:scale-95">
+                    <i class="fa-solid fa-file-lines text-sm"></i>
+                    <span>Cotización</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
 
 <!-- MODAL DEL ESCÁNER DE CÁMARA (Oculto por defecto) -->
 <div id="barcode-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
@@ -935,14 +1117,7 @@ let state = {
         </button>
     </div>
 </div>
-                                <button onclick="sendQuotationWhatsApp()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded-xl transition flex items-center justify-center gap-1 text-xs shadow-md">
-                                    <i class="fa-solid fa-file-lines text-sm"></i> Cotización
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
+                             
              <!-- VISTA 2: INVENTARIO -->
 <section id="view-inventory" class="hidden space-y-4 md:space-y-6">
     <div class="bg-white rounded-2xl shadow-sm p-4 md:p-6 flex flex-col md:flex-row justify-between items-center gap-3">
@@ -1155,7 +1330,7 @@ let state = {
             <h3 id="stat-total-trans" class="text-base md:text-xl font-bold text-slate-800 mt-1">0</h3>
         </div>
     </div>
-    <!-- PANEL ANALÍTICO DE PRODUCTOS (MÓDULO POS Y VENTAS) -->
+   <!-- PANEL ANALÍTICO DE PRODUCTOS (MÓDULO POS Y VENTAS) -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mt-6">
         <!-- Panel: Productos Más Frecuentes -->
         <div class="bg-white rounded-2xl shadow-sm p-4 md:p-6 border border-slate-100 flex flex-col">
@@ -1654,7 +1829,171 @@ let state = {
     if (iconMob) {
         iconMob.className = isDark ? 'fa-solid fa-moon relative z-10' : 'fa-solid fa-sun relative z-10';
     }
+ // ====================================================
+// MÓDULO BODEGA: GESTIÓN DE PERFUMES Y TRASLADOS
+// ====================================================
 
+modulesInfo.bodega = {
+    title: "Módulo de Bodega de Perfumes",
+    icon: "fa-warehouse",
+    desc: "Gestiona el inventario central de perfumes en bodega y realiza traslados de mercancía hacia el almacén de ventas."
+};
+// ====================================================
+// MÓDULO BODEGA: GESTIÓN DE PERFUMES Y STOCK
+// ====================================================
+
+document.addEventListener("DOMContentLoaded", () => {
+    // Intentar renderizar la bodega al cargar la página
+    intentarRenderizarBodega();
+});
+
+function intentarRenderizarBodega() {
+    if (typeof state !== 'undefined' && state.products && state.products.length > 0) {
+        renderBodega();
+    } else {
+        setTimeout(intentarRenderizarBodega, 300);
+    }
+}
+
+function renderBodega() {
+    const tbody = document.getElementById('bodega-table-body');
+    const countBadge = document.getElementById('bodega-count');
+    if (!tbody) return;
+    
+    const filter = (document.getElementById('bodega-search')?.value || '').toLowerCase();
+    tbody.innerHTML = '';
+
+    const filtered = state.products.filter(p => {
+        const nombre = (p.name || p.nombre || '').toLowerCase();
+        const categoria = (p.category || p.categoria || '').toLowerCase();
+        return nombre.includes(filter) || categoria.includes(filter);
+    });
+
+    // 🔢 Cálculo automático de la suma total de productos/unidades en bodega
+    const totalUnidadesBodega = filtered.reduce((acc, p) => {
+        const stockB = p.stockBodega !== undefined ? Number(p.stockBodega) : Number(p.stock || 0);
+        return acc + stockB;
+    }, 0);
+
+    if (countBadge) {
+        countBadge.innerText = totalUnidadesBodega;
+    }
+
+    if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400">No se encontraron artículos en bodega.</td></tr>';
+        return;
+    }
+
+    filtered.forEach(p => {
+        const stockBodega = p.stockBodega !== undefined ? p.stockBodega : (p.stock || 0);
+        const categoria = p.category || p.categoria || 'General';
+        
+        tbody.innerHTML += `
+            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition border-b border-slate-100 dark:border-slate-800">
+                <td class="p-3 md:p-4 font-bold text-slate-800 dark:text-white">${p.name}</td>
+                <td class="p-3 md:p-4 text-slate-500 dark:text-slate-400">${categoria}</td>
+                <td class="p-3 md:p-4 text-center">
+                    <span class="px-3 py-1 bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 font-bold rounded-lg border border-amber-200 dark:border-amber-800">
+                        ${stockBodega}
+                    </span>
+                </td>
+                <td class="p-3 md:p-4 text-center">
+                    <button onclick="openBodegaModal(${p.id})" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl text-xs transition shadow-sm flex items-center gap-1.5 mx-auto">
+                        <i class="fa-solid fa-pen-to-square"></i> Editar Stock
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+function openBodegaModal(id = null) {
+    const modal = document.getElementById('bodega-modal');
+    if (!modal) return;
+    modal.classList.remove('hidden');
+
+    if (id) {
+        const p = state.products.find(prod => prod.id === id);
+        if (p) {
+            document.getElementById('modal-bodega-title').innerText = 'Editar Artículo en Bodega';
+            document.getElementById('bodega-prod-id').value = p.id;
+            document.getElementById('bodega-prod-name').value = p.name;
+            document.getElementById('bodega-prod-category').value = p.category || '';
+            document.getElementById('bodega-prod-price').value = p.price;
+            document.getElementById('bodega-prod-stock-bodega').value = p.stockBodega !== undefined ? p.stockBodega : (p.stock || 0);
+        }
+    } else {
+        document.getElementById('modal-bodega-title').innerText = 'Nuevo Artículo en Bodega';
+        document.getElementById('bodega-prod-id').value = '';
+        document.getElementById('bodega-prod-name').value = '';
+        document.getElementById('bodega-prod-category').value = '';
+        document.getElementById('bodega-prod-price').value = '';
+        document.getElementById('bodega-prod-stock-bodega').value = '';
+    }
+}
+
+function closeBodegaModal() {
+    const modal = document.getElementById('bodega-modal');
+    if (modal) modal.classList.add('hidden');
+}
+
+function saveBodegaProduct() {
+    if (!state.cashRegister.isOpen) return alert('La caja está cerrada.');
+    
+    const id = document.getElementById('bodega-prod-id').value;
+    const name = document.getElementById('bodega-prod-name').value.trim();
+    const category = document.getElementById('bodega-prod-category').value.trim();
+    const price = parseFloat(document.getElementById('bodega-prod-price').value);
+    const stockBodega = parseInt(document.getElementById('bodega-prod-stock-bodega').value);
+
+    if (!name || isNaN(price) || isNaN(stockBodega)) return alert('Completa todos los campos correctamente.');
+
+    if (id) {
+        const p = state.products.find(prod => prod.id === parseInt(id));
+        if (p) {
+            p.name = name;
+            p.category = category || 'General';
+            p.price = price;
+            p.stockBodega = stockBodega;
+            p.stock = (p.stockBodega || 0) + (p.stockAlmacen || 0);
+        }
+    } else {
+        state.products.push({
+            id: Date.now(),
+            name: name,
+            category: category || 'General',
+            price: price,
+            stockBodega: stockBodega,
+            stockAlmacen: 0,
+            stock: stockBodega
+        });
+    }
+
+    saveData();
+    closeBodegaModal();
+    refreshAllUI();
+}
+function transferStockToAlmacen(productId) {
+    if (!state.cashRegister.isOpen) return alert('La caja está cerrada.');
+    const product = state.products.find(p => p.id === productId);
+    if (!product) return;
+
+    const currentBodega = product.stockBodega !== undefined ? product.stockBodega : product.stock;
+    const qtyStr = prompt(`¿Cuántas unidades deseas trasladar de Bodega al Almacén de Ventas para "${product.name}"?\nStock disponible en Bodega: ${currentBodega}`);
+    if (qtyStr === null) return;
+    const qty = parseInt(qtyStr);
+
+    if (isNaN(qty) || qty <= 0) return alert('Cantidad inválida.');
+    if (qty > currentBodega) return alert('No hay suficiente stock en bodega para este traslado.');
+
+    product.stockBodega = currentBodega - qty;
+    product.stockAlmacen = (product.stockAlmacen || 0) + qty;
+    product.stock = product.stockBodega + product.stockAlmacen;
+
+    saveData();
+    refreshAllUI();
+    alert(`¡Traslado exitoso! Se movieron ${qty} unidades de "${product.name}" al almacén de ventas.`);
+}
     // Actualizar partículas dinámicas (Estrellas para Luna, Nubes para Sol)
     const desktopParticles = document.querySelectorAll('.mode-particle');
     desktopParticles.forEach(p => {
@@ -1678,6 +2017,7 @@ let state = {
         }
     });
 }
+
 
         // --- SISTEMA DE IMÁGENES DE FONDO ---
         const backgroundImages = Array.from({ length: 100 }, (_, i) => `https://picsum.photos/1920/1080?random=${i + 1}`);
@@ -1869,7 +2209,143 @@ function checkLicenseOnLoad() {
                 errEl.classList.add('hidden');
             }
         }
+// Actualizar información del módulo en el banner superior
+modulesInfo.bodega = {
+    title: "Módulo de Bodega",
+    icon: "fa-warehouse",
+    desc: "Gestiona el inventario central en bodega y realiza traslados de mercancía hacia el almacén de ventas."
+};
+// ====================================================
+// MÓDULO BODEGA: GESTIÓN DE PERFUMES Y TRASLADOS (100% FUNCIONAL)
+// ====================================================
 
+modulesInfo.bodega = {
+    title: "Módulo de Bodega de Perfumes",
+    icon: "fa-warehouse",
+    desc: "Gestiona el inventario central de perfumes en bodega y realiza traslados de mercancía hacia el almacén de ventas."
+};
+
+function renderBodega() {
+    const tbody = document.getElementById('bodega-table-body');
+    const countBadge = document.getElementById('bodega-count');
+    if (!tbody) return;
+    
+    const filter = (document.getElementById('bodega-search')?.value || '').toLowerCase();
+    tbody.innerHTML = '';
+
+    const filtered = state.products.filter(p => 
+        p.name.toLowerCase().includes(filter) || 
+        (p.category && p.category.toLowerCase().includes(filter))
+    );
+
+    if (countBadge) countBadge.innerText = filtered.length;
+
+    if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400">No se encontraron artículos en bodega.</td></tr>';
+        return;
+    }
+
+    filtered.forEach(p => {
+        const stockBodega = p.stockBodega !== undefined ? p.stockBodega : (p.stock || 0);
+        tbody.innerHTML += `
+            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition border-b border-slate-100 dark:border-slate-800">
+                <td class="p-3 md:p-4 font-bold text-slate-800 dark:text-white">${p.name}</td>
+                <td class="p-3 md:p-4 text-slate-500 dark:text-slate-400">${p.category || 'General'}</td>
+                <td class="p-3 md:p-4 text-center">
+                    <span class="px-3 py-1 bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 font-bold rounded-lg border border-amber-200 dark:border-amber-800">
+                        ${stockBodega}
+                    </span>
+                </td>
+                <td class="p-3 md:p-4 text-center">
+                    <button onclick="openBodegaModal(${p.id})" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl text-xs transition shadow-sm flex items-center gap-1.5 mx-auto">
+                        <i class="fa-solid fa-pen-to-square"></i> Editar Stock
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+function openBodegaModal(id = null) {
+    document.getElementById('bodega-modal').classList.remove('hidden');
+    if (id) {
+        const p = state.products.find(prod => prod.id === id);
+        document.getElementById('modal-bodega-title').innerText = 'Editar Artículo en Bodega';
+        document.getElementById('bodega-prod-id').value = p.id;
+        document.getElementById('bodega-prod-name').value = p.name;
+        document.getElementById('bodega-prod-category').value = p.category || '';
+        document.getElementById('bodega-prod-price').value = p.price;
+        document.getElementById('bodega-prod-stock-bodega').value = p.stockBodega || 0;
+    } else {
+        document.getElementById('modal-bodega-title').innerText = 'Nuevo Artículo en Bodega';
+        document.getElementById('bodega-prod-id').value = '';
+        document.getElementById('bodega-prod-name').value = '';
+        document.getElementById('bodega-prod-category').value = '';
+        document.getElementById('bodega-prod-price').value = '';
+        document.getElementById('bodega-prod-stock-bodega').value = '';
+    }
+}
+
+function closeBodegaModal() {
+    document.getElementById('bodega-modal').classList.add('hidden');
+}
+
+function saveBodegaProduct() {
+    if (!state.cashRegister.isOpen) return alert('La caja está cerrada.');
+    const id = document.getElementById('bodega-prod-id').value;
+    const name = document.getElementById('bodega-prod-name').value.trim();
+    const category = document.getElementById('bodega-prod-category').value.trim();
+    const price = parseFloat(document.getElementById('bodega-prod-price').value);
+    const stockBodega = parseInt(document.getElementById('bodega-prod-stock-bodega').value);
+
+    if (!name || isNaN(price) || isNaN(stockBodega)) return alert('Completa todos los campos correctamente.');
+
+    if (id) {
+        const p = state.products.find(prod => prod.id === parseInt(id));
+        if (p) {
+            p.name = name;
+            p.category = category || 'General';
+            p.price = price;
+            p.stockBodega = stockBodega;
+            p.stock = (p.stockBodega || 0) + (p.stockAlmacen || 0);
+        }
+    } else {
+        state.products.push({
+            id: Date.now(),
+            name: name,
+            category: category || 'General',
+            price: price,
+            stockBodega: stockBodega,
+            stockAlmacen: 0,
+            stock: stockBodega
+        });
+    }
+
+    saveData();
+    closeBodegaModal();
+    refreshAllUI();
+}
+
+function transferStockToAlmacen(productId) {
+    if (!state.cashRegister.isOpen) return alert('La caja está cerrada.');
+    const product = state.products.find(p => p.id === productId);
+    if (!product) return;
+
+    const qtyStr = prompt(`¿Cuántas unidades deseas trasladar de Bodega a Almacén para "${product.name}"?\nStock actual en Bodega: ${product.stockBodega || 0}`);
+    if (qtyStr === null) return;
+    const qty = parseInt(qtyStr);
+
+    if (isNaN(qty) || qty <= 0) return alert('Cantidad inválida.');
+    if (qty > (product.stockBodega || 0)) return alert('No hay suficiente stock en bodega.');
+
+    product.stockBodega = (product.stockBodega || 0) - qty;
+    product.stockAlmacen = (product.stockAlmacen || 0) + qty;
+    product.stock = product.stockBodega + product.stockAlmacen;
+
+    saveData();
+    refreshAllUI();
+    alert(`¡Traslado exitoso! Se movieron ${qty} unidades al almacén.`);
+}
         function activateLicense() {
             const inputKey = document.getElementById('license-input').value.trim();
             const expiryDate = parseLicense(inputKey);
@@ -1912,24 +2388,21 @@ function listenRealtimeDatabase() {
     db.collection("pos_database").doc("main_data").onSnapshot((doc) => {
         if (doc.exists) {
             const cloudData = doc.data();
-            
-            // Obtenemos la marca de tiempo de la nube y del dispositivo local
             const cloudTime = new Date(cloudData.lastUpdated || 0).getTime();
             const localTime = new Date(localStorage.getItem('pos_last_updated') || 0).getTime();
 
-            // Sincronizar solo si la nube es más reciente, O si el local está vacío y la nube tiene datos
-            if (cloudTime >= localTime || (state.payables.length === 0 && cloudData.payables?.length > 0)) {
-                
-                state.products = cloudData.products || [];
-                state.sales = cloudData.sales || [];
-                state.clients = cloudData.clients || [];
-                state.accounts = cloudData.accounts || [];
-                state.providers = cloudData.providers || [];
-                state.payables = cloudData.payables || [];
+            // Sincronizar desde la nube SOLO si la nube es estrictamente más reciente
+            if (cloudTime > localTime) {
+                state.products = cloudData.products || state.products;
+                state.sales = cloudData.sales || state.sales;
+                state.clients = cloudData.clients || state.clients;
+                state.accounts = cloudData.accounts || state.accounts;
+                state.providers = cloudData.providers || state.providers;
+                state.payables = cloudData.payables || state.payables;
                 state.cashRegister = cloudData.cashRegister || state.cashRegister;
-                state.cashHistory = cloudData.cashHistory || [];
+                state.cashHistory = cloudData.cashHistory || state.cashHistory;
 
-                // Guardar localmente con la marca de tiempo de la nube
+                // Guardar localmente
                 localStorage.setItem('pos_products', JSON.stringify(state.products));
                 localStorage.setItem('pos_sales', JSON.stringify(state.sales));
                 localStorage.setItem('pos_clients', JSON.stringify(state.clients));
@@ -1941,16 +2414,13 @@ function listenRealtimeDatabase() {
                 localStorage.setItem('pos_last_updated', cloudData.lastUpdated);
 
                 refreshAllUI();
-                console.log("Datos sincronizados desde la nube de forma segura.");
-            } else {
-                console.log("Los datos locales son más recientes o iguales; se omite la sobrescritura.");
+                console.log("Datos sincronizados con éxito desde la nube.");
             }
         }
     }, (error) => {
         console.error("Error al escuchar en tiempo real:", error);
     });
 }
-
 async function saveData() {
     const timestamp = new Date().toISOString();
     
@@ -2075,6 +2545,7 @@ async function saveData() {
             renderCartTabs();
             renderCart();
             renderInventory();
+            renderBodega();
             renderCashControl();
             renderAccounts();
             renderPayables();
@@ -2106,6 +2577,7 @@ function switchTab(tab) {
         if (tab === 'accounts') moduleName = 'Bancos & Efectivo';
         if (tab === 'statistics') moduleName = 'Estadísticas';
         if (tab === 'reports') moduleName = 'Reportes';
+        if (tab === 'bodega') renderBodega();
 
         const pin = prompt(`Ingrese el código PIN de seguridad de 4 dígitos para acceder a ${moduleName}:`);
         if (pin === null) return; // Si cancela, no hace nada
@@ -2115,21 +2587,15 @@ function switchTab(tab) {
         }
     }
 
-    const tabs = ['pos', 'inventory', 'cash', 'accounts', 'payables', 'clients', 'statistics', 'reports', 'billing'];
+   const tabs = ['pos', 'inventory', 'cash', 'accounts', 'payables', 'clients', 'statistics', 'reports', 'billing', 'bodega'];
     tabs.forEach(t => {
         const view = document.getElementById(`view-${t}`);
         const btn = document.getElementById(`btn-${t}`);
         const mobBtn = document.getElementById(`mob-btn-${t}`);
 
         if (view) view.classList.add('hidden');
-        if (btn) {
-            btn.classList.remove('bg-emerald-600', 'text-white');
-            btn.classList.add('hover:bg-slate-800');
-        }
-        if (mobBtn) {
-            mobBtn.classList.remove('text-emerald-400');
-            mobBtn.classList.add('text-slate-400');
-        }
+        if (btn) btn.classList.remove('bg-emerald-600', 'text-white');
+        if (mobBtn) mobBtn.classList.remove('text-emerald-400');
     });
 
     const activeView = document.getElementById(`view-${tab}`);
@@ -4449,11 +4915,26 @@ function renderStatistics() {
             }
         });
     }
-    function renderStatistics() {
-    // ... (código existente de KPIs y gráficos del sistema)
+   function renderStatistics() {
+    // ... tu lógica existente de tarjetas KPI ...
 
-    // 🌟 LLAMADA AL NUEVO PANEL ANALÍTICO DE PRODUCTOS
+    // Invocación para renderizar el panel analítico de productos
     renderProductAnalytics();
+
+    // ... renderizado de gráficos con Chart.js ...
+}// Agregar dentro de tu inicialización o al cargar los datos
+state.products.forEach(p => {
+    if (p.stockBodega === undefined) p.stockBodega = 10;
+    if (p.stockAlmacen === undefined) p.stockAlmacen = p.stock || 20;
+    p.stock = (p.stockBodega || 0) + (p.stockAlmacen || 0);
+});
+function renderStatistics() {
+    // ... tu lógica existente de tarjetas KPI ...
+
+    // Invocación para renderizar el panel analítico de productos
+    renderProductAnalytics();
+
+    // ... renderizado de gráficos con Chart.js ...
 }
 
     // ==========================================
@@ -4472,6 +4953,7 @@ function renderStatistics() {
             else if (s.method === 'Transferencia') transferenciaTotal += s.total;
             else if (s.method === 'Crédito') creditoTotal += s.total;
         });
+
 
         chartPaymentMethodsInstance = new Chart(ctxPayment, {
             type: 'doughnut',
@@ -5221,10 +5703,10 @@ function saveEditedBillingInvoice() {
         return alert('La fecha y el nombre del cliente/proveedor son obligatorios.');
     }
 
-   // Variable temporal para editar los artículos de la factura seleccionada
+  // Variable temporal estrictamente aislada para la edición de facturas
 let tempEditBillingItems = [];
 
-// 1. Abrir modal y cargar la información real de la factura (artículos, precios y cantidades)
+// 1. Abrir modal y cargar la información real y limpia de la factura
 function openEditBillingModal(rawId, type) {
     if (!state.cashRegister.isOpen) return alert('La caja está cerrada. No se pueden realizar modificaciones.');
 
@@ -5236,6 +5718,9 @@ function openEditBillingModal(rawId, type) {
 
     const modal = document.getElementById('edit-billing-modal');
     if (!modal) return;
+
+    // 🔒 LIMPIEZA ABSOLUTA DE CUALQUIER RESIDUO ANTERIOR
+    tempEditBillingItems = [];
 
     document.getElementById('edit-bill-id').value = rawId;
     document.getElementById('edit-bill-type').value = type;
@@ -5253,21 +5738,14 @@ function openEditBillingModal(rawId, type) {
         document.getElementById('edit-bill-party').value = sale.clientName || 'Cliente Ocasional';
         document.getElementById('edit-bill-method').value = sale.method;
         
-        // Cargar ítems reales guardados en la venta
-        if (sale.items && sale.items.length > 0) {
+        // Copiar exclusivamente los ítems de esta venta (sin tocar state.cart)
+        if (sale.items && Array.isArray(sale.items) && sale.items.length > 0) {
             tempEditBillingItems = sale.items.map(i => ({
-                id: i.id || Date.now(),
+                id: i.id || Date.now() + Math.random(),
                 name: i.name,
-                qty: i.qty,
-                price: i.price || i.cost || 0
+                qty: Number(i.qty) || 1,
+                price: Number(i.price || i.cost) || 0
             }));
-        } else {
-            tempEditBillingItems = [{
-                id: Date.now(),
-                name: `Venta General (${sale.id})`,
-                qty: 1,
-                price: sale.total
-            }];
         }
 
     } else if (type === 'COMPRA') {
@@ -5280,29 +5758,21 @@ function openEditBillingModal(rawId, type) {
         document.getElementById('edit-bill-party').value = payable.providerName || 'Proveedor';
         document.getElementById('edit-bill-method').value = payable.status || 'Pendiente';
         
-        // Cargar ítems reales guardados en la compra
-        if (payable.items && payable.items.length > 0) {
+        // Copiar exclusivamente los ítems de esta compra
+        if (payable.items && Array.isArray(payable.items) && payable.items.length > 0) {
             tempEditBillingItems = payable.items.map(i => ({
-                id: i.id || Date.now(),
+                id: i.id || Date.now() + Math.random(),
                 name: i.name,
-                qty: i.qty,
-                price: i.cost !== undefined ? i.cost : (i.price || 0)
+                qty: Number(i.qty) || 1,
+                price: Number(i.cost !== undefined ? i.cost : i.price) || 0
             }));
-        } else {
-            tempEditBillingItems = [{
-                id: Date.now(),
-                name: `Factura ${payable.num} (Detalle General)`,
-                qty: 1,
-                price: payable.total
-            }];
         }
     }
 
     renderEditBillingItemsTable();
     modal.classList.remove('hidden');
 }
-
-// 2. Renderizar la tabla de artículos dentro del modal con campos editables
+// 2. Renderizar la tabla de artículos dentro del modal de edición
 function renderEditBillingItemsTable() {
     const tbody = document.getElementById('edit-billing-items-body');
     if (!tbody) return;
@@ -5310,14 +5780,14 @@ function renderEditBillingItemsTable() {
     let grandTotal = 0;
 
     if (tempEditBillingItems.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="p-3 text-center text-slate-400">Sin artículos en esta factura</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="p-3 text-center text-slate-400">Sin artículos en esta factura. Agregue uno desde el inventario.</td></tr>';
     } else {
         tempEditBillingItems.forEach((item, index) => {
             const subtotal = item.qty * item.price;
             grandTotal += subtotal;
 
             tbody.innerHTML += `
-                <tr class="hover:bg-slate-50 transition">
+                <tr class="hover:bg-slate-50 transition border-b border-slate-100">
                     <td class="p-2">
                         <input type="text" value="${item.name}" onchange="updateEditBillingItemValue(${index}, 'name', this.value)" class="w-full px-2 py-1 border rounded text-xs font-semibold text-slate-800 bg-white">
                     </td>
@@ -5338,10 +5808,10 @@ function renderEditBillingItemsTable() {
         });
     }
 
-    document.getElementById('edit-bill-total').value = grandTotal;
+    const totalEl = document.getElementById('edit-bill-total');
+    if (totalEl) totalEl.value = grandTotal;
 }
-
-// 3. Actualizar valores en tiempo real (nombre, cantidad, precio)
+// 3. Actualizar valores en tiempo real
 function updateEditBillingItemValue(index, field, newValue) {
     if (!tempEditBillingItems[index]) return;
 
@@ -5357,8 +5827,7 @@ function updateEditBillingItemValue(index, field, newValue) {
 
     renderEditBillingItemsTable();
 }
-
-// 4. Agregar producto seleccionado desde el inventario
+// 4. Agregar producto seleccionado desde el inventario de manera controlada
 function addSelectedInventoryToEditBilling() {
     const select = document.getElementById('edit-billing-select-prod');
     if (!select || !select.value) {
@@ -5385,32 +5854,30 @@ function addSelectedInventoryToEditBilling() {
     select.value = '';
     renderEditBillingItemsTable();
 }
-
-// 5. Llenar el select con los productos de inventario
+// 5. Poblar selector de productos
 function populateEditBillingProductSelect() {
     const select = document.getElementById('edit-billing-select-prod');
     if (!select) return;
 
     select.innerHTML = '<option value="">-- Seleccionar de Inventario --</option>';
     state.products.forEach(p => {
-        select.innerHTML += `<option value="${p.id}">${p.name} - ${formatCOP(p.price)}</option>`;
+        select.innerHTML += `<option value="${p.id}">${p.name} - ${formatCOP(p.price)} (Stock: ${p.stock})</option>`;
     });
 }
-
-// 6. Eliminar un renglón de la tabla
+// 6. Eliminar renglón
 function removeEditBillingItemRow(index) {
     tempEditBillingItems.splice(index, 1);
     renderEditBillingItemsTable();
 }
-
 // 7. Cerrar modal de edición
 function closeEditBillingModal() {
     const modal = document.getElementById('edit-billing-modal');
     if (modal) modal.classList.add('hidden');
     tempEditBillingItems = [];
 }
-
-// 8. Guardar cambios en la factura editada
+// =========================================================================
+// SOLUCIÓN: GUARDADO INTELIGENTE POR DIFERENCIAS EN EDICIÓN DE FACTURAS
+// =========================================================================
 function saveEditedBillingInvoice() {
     if (!state.cashRegister.isOpen) return alert('La caja está cerrada. No se pueden realizar modificaciones.');
 
@@ -5429,38 +5896,86 @@ function saveEditedBillingInvoice() {
     if (type === 'VENTA') {
         const sale = state.sales.find(s => s.id === rawId);
         if (sale) {
+            // 1. REVERTIR EL STOCK ANTERIOR DE LA VENTA (Devolver al POS lo que se había vendido)
+            if (sale.items && Array.isArray(sale.items)) {
+                sale.items.forEach(oldItem => {
+                    const prod = state.products.find(p => p.id === oldItem.id || p.name.trim().toLowerCase() === oldItem.name.trim().toLowerCase());
+                    if (prod) {
+                        prod.stock += oldItem.qty; 
+                    }
+                });
+            }
+
+            // 2. APLICAR ÚNICAMENTE LAS NUEVAS CANTIDADES (Descontar el nuevo stock real)
             sale.date = date;
             sale.clientName = party;
             sale.method = method;
             sale.total = newTotal;
-            sale.items = tempEditBillingItems.map(i => ({
-                id: i.id,
-                name: i.name,
-                qty: i.qty,
-                price: i.price
-            }));
+            sale.items = tempEditBillingItems.map(i => {
+                const prod = state.products.find(p => p.id === i.id || p.name.trim().toLowerCase() === i.name.trim().toLowerCase());
+                if (prod) {
+                    prod.stock = Math.max(0, prod.stock - i.qty); // Resta solo el cambio actual
+                }
+                return {
+                    id: i.id,
+                    name: i.name,
+                    qty: i.qty,
+                    price: i.price
+                };
+            });
         }
     } else if (type === 'COMPRA') {
         const payable = state.payables.find(p => p.id === rawId);
         if (payable) {
+            // 1. REVERTIR EL STOCK ANTERIOR DE LA COMPRA (Quitar de bodega lo que traía la factura vieja)
+            if (payable.items && Array.isArray(payable.items)) {
+                payable.items.forEach(oldItem => {
+                    const prod = state.products.find(p => p.name.trim().toLowerCase() === oldItem.name.trim().toLowerCase());
+                    if (prod) {
+                        prod.stock = Math.max(0, prod.stock - oldItem.qty);
+                    }
+                });
+            }
+
+            // 2. APLICAR ÚNICAMENTE LOS NUEVOS ARTÍCULOS Y CANTIDADES
             payable.date = date;
             payable.providerName = party;
             payable.status = method;
             payable.total = newTotal;
             payable.balance = newTotal - (payable.paid || 0);
-            payable.items = tempEditBillingItems.map(i => ({
-                id: i.id,
-                name: i.name,
-                qty: i.qty,
-                cost: i.price,
-                price: i.price
-            }));
+            payable.items = tempEditBillingItems.map(i => {
+                const prod = state.products.find(p => p.id === i.id || p.name.trim().toLowerCase() === i.name.trim().toLowerCase());
+                if (prod) {
+                    prod.stock += i.qty; // Suma solo la nueva cantidad editada
+                    if (i.price > 0) prod.price = i.price;
+                } else {
+                    state.products.push({
+                        id: Date.now() + Math.random(),
+                        name: i.name.trim(),
+                        category: 'General',
+                        barcode: '',
+                        price: i.price || 0,
+                        stock: i.qty
+                    });
+                }
+                return {
+                    id: i.id,
+                    name: i.name,
+                    qty: i.qty,
+                    cost: i.price,
+                    price: i.price
+                };
+            });
         }
     }
+
+    // Sincronizar cartera, guardar y actualizar interfaz
+    if (typeof recalculateClientDebts === 'function') recalculateClientDebts();
     saveData();
     closeEditBillingModal();
     refreshAllUI();
-    alert('¡Factura modificada con éxito!');
+    
+    alert('¡Factura modificada con éxito y stock sincronizado por diferencias sin duplicar!');
 }
     // ⚡ PASO CLAVE: Recalcular automáticamente las deudas de los clientes con base en las facturas actualizadas
     recalculateClientDebts();
